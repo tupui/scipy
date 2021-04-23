@@ -48,9 +48,6 @@ jobs:
       - restore_cache:
           keys:
               - build-{{ .Branch }}
-      - restore_cache:
-          keys:
-              - doc-{{ .Branch }}
 
       - run:
           name: setup Python venv
@@ -94,6 +91,10 @@ jobs:
 
       - run:
           <<: *debian
+
+      - restore_cache:
+          keys:
+              - doc-{{ .Branch }}
 
       - run:
           name: build docs
