@@ -6,7 +6,7 @@ github:
 CI:
 - any: ["**/*.yml", "**/*.yaml"]
 
-gitpod: **/*gitpod*
+gitpod: "**/*gitpod.yml"
 
 Documentation:
 - any: ["**/*.rst", "**/*.md"]
@@ -16,11 +16,9 @@ Benchmarks: benchmarks/**/*
 C/C++:
 - any: ["**/*.c", "**/*.cpp", "**/*.cxx", "**/*.h"]
 
-Cython:
-- **/*.pyx
+Cython: "**/*.pyx"
 
-Fortran:
-- **/*.f
+Fortran: "**/*.f"
 
 scipy.cluster: scipy/cluster/**/*
 scipy.constants: scipy/constants/**/*
