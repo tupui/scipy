@@ -1,4 +1,4 @@
-"""Indexing mixin for sparse matrix classes. haha
+"""Indexing mixin for sparse matrix classes.
 """
 import numpy as np
 from .sputils import isintlike
