@@ -1,7 +1,7 @@
 # To use:
 #   $ conda env create -f environment.yml  # `mamba` works too for this command
 #   $ conda activate scipy-dev
-#
+#fdsfds
 # Also used to build the `scipy-dev` Docker image via GitHub Actions
 name: scipy-dev
 channels:
