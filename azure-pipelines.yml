@@ -55,22 +55,6 @@ stages:
   variables:
     AZURE_CI: 'true'
   jobs:
-  - job: prerelease_deps_coverage_64bit_blas
-    pool:
-      vmImage: 'ubuntu-18.04'
-    steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.8'
-        addToPath: true
-        architecture: 'x64'
-    - template: ci/azure-travis-template.yaml
-      parameters:
-        test_mode: full
-        coverage: true
-        numpy_spec: "--pre --upgrade --timeout=60 -i $PRE_WHEELS numpy"
-        other_spec: "--pre --upgrade --timeout=60"
-        use_64bit_blas: true
   - job: refguide_asv_check
     pool:
       vmImage: 'ubuntu-20.04'
