@@ -141,6 +141,7 @@ jobs:
         python -m pip install --pre --upgrade --timeout=60 -i https://pypi.anaconda.org/scipy-wheels-nightly/simple numpy
         python -m pip install --pre --upgrade --timeout=60 cython pytest pytest-xdist pybind11 mpmath gmpy2 pythran threadpoolctl
         python -m pip install matplotlib scikit-umfpack scikit-sparse
+        python -m pip uninstall -y scipy
 
     - name:  Prepare compiler cache
       id:    prep-ccache
@@ -177,7 +178,7 @@ jobs:
 
     - name: Setup build and install scipy
       run: |
-        python dev.py -j 2 --build-only --mode full
+        python dev.py -g -j 2 --build-only --coverage --gcov
 
     - name: Ccache performance
       shell: bash -l {0}
@@ -192,7 +193,7 @@ jobs:
     - name: Test SciPy
       run: |
         export OMP_NUM_THREADS=2
-        python dev.py -n -j 2 --mode full --coverage --gcov
+        python dev.py -g -n -j 2 --mode full --coverage --gcov
 
     - name: Upload coverage information
       run: |
