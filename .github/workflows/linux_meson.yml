@@ -177,7 +177,7 @@ jobs:
 
     - name: Setup build and install scipy
       run: |
-        python dev.py -j 2 --build-only --werror --mode full
+        python dev.py -j 2 --build-only --mode full
 
     - name: Ccache performance
       shell: bash -l {0}
