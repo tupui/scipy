@@ -142,6 +142,7 @@ jobs:
         python -m pip install --pre --upgrade --timeout=60 cython pytest pytest-xdist pybind11 mpmath gmpy2 pythran threadpoolctl
         python -m pip install matplotlib scikit-umfpack scikit-sparse
         python -m pip uninstall -y scipy
+        python -m pip install pytest-cov coverage codecov
 
     - name:  Prepare compiler cache
       id:    prep-ccache
