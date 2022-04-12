@@ -179,7 +179,7 @@ jobs:
 
     - name: Setup build and install scipy
       run: |
-        python dev.py -j 2 --build-only
+        python dev.py -j 2 --build-only --gcov
 
     - name: Ccache performance
       shell: bash -l {0}
