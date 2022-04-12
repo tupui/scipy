@@ -137,7 +137,7 @@ jobs:
 
     - name: Install Python packages
       run: |
-        python -m pip install setuptools wheel ninja meson==0.60.3
+        python -m pip install "setuptools<60.0" wheel ninja meson==0.60.3
         python -m pip install --pre --upgrade --timeout=60 -i https://pypi.anaconda.org/scipy-wheels-nightly/simple numpy
         python -m pip install --pre --upgrade --timeout=60 cython pytest pytest-xdist pybind11 mpmath gmpy2 pythran threadpoolctl
         python -m pip install matplotlib scikit-umfpack scikit-sparse
@@ -194,6 +194,7 @@ jobs:
     - name: Test SciPy
       run: |
         export OMP_NUM_THREADS=2
+        export OPENBLAS_NUM_THREADS=1
         python dev.py -n -j 2 --mode full --coverage
 
     - name: Upload coverage information
