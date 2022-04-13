@@ -1641,14 +1641,12 @@ class LinprogCommonTests:
                           method=self.method, options=self.options)
         _assert_success(res, desired_x=[129, 92, 12, 198, 0, 10], desired_fun=92)
 
-    @pytest.mark.skipif(sys.platform == 'darwin',
-                        reason=("Failing on some local macOS builds, "
-                                "see gh-13846"))
+    @pytest.mark.skip(reason=("Failing on some macOS and linux builds, "
+                              "see gh-13846 and gh-10466"))
     def test_bug_10466(self):
         """
         Test that autoscale fixes poorly-scaled problem
         """
-        pytest.skip()
         c = [-8., -0., -8., -0., -8., -0., -0., -0., -0., -0., -0., -0., -0.]
         A_eq = [[1., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
                 [0., 0., 1., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
