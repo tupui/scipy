@@ -370,7 +370,7 @@ coefficients :math:`c_{1}` and :math:`c_{2}` are estimated using
 linear least squares.
 
 .. plot::
-   :alt: "..."
+   :alt: "This code plots a time-series on an X-Y plot. The series is plotted with blue X markers from top left to bottom right and has a clear trend. The trend is plotted as a yellow trace smoothly sweeping along the series. The trend line is well fit to the series."
 
    >>> import numpy as np
    >>> from scipy import linalg
@@ -392,6 +392,7 @@ linear least squares.
    >>> plt.plot(xi,zi,'x',xi2,yi2)
    >>> plt.axis([0,1.1,3.0,5.5])
    >>> plt.xlabel('$x_i$')
+   >>> plt.ylabel('$y_i$')
    >>> plt.title('Data fitting with linalg.lstsq')
    >>> plt.show()
 

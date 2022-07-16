@@ -80,19 +80,21 @@ corresponding to positive frequencies is plotted.
 The example plots the FFT of the sum of two sines.
 
 .. plot::
-    :alt: "..."
+    :alt: "This code generates an X-Y plot showing amplitude on the Y axis vs frequency on the X axis. A single blue trace has an amplitude of zero all the way across with the exception of two peaks. The taller first peak is at 50 Hz with a second peak at 80 Hz."
 
     >>> from scipy.fft import fft, fftfreq
     >>> # Number of sample points
     >>> N = 600
-    >>> # sample spacing
-    >>> T = 1.0 / 800.0
-    >>> x = np.linspace(0.0, N*T, N, endpoint=False)
-    >>> y = np.sin(50.0 * 2.0*np.pi*x) + 0.5*np.sin(80.0 * 2.0*np.pi*x)
+    >>> # sample period
+    >>> T = 1 / 800
+    >>> x = np.linspace(0, N*T, N, endpoint=False)
+    >>> y = np.sin(50 * 2 * np.pi * x) + 0.5 * np.sin(80 * 2 * np.pi * x)
     >>> yf = fft(y)
-    >>> xf = fftfreq(N, T)[:N//2]
+    >>> xf = fftfreq(N, T)[:N // 2]
     >>> import matplotlib.pyplot as plt
-    >>> plt.plot(xf, 2.0/N * np.abs(yf[0:N//2]))
+    >>> plt.plot(xf, 2 / N * np.abs(yf[0:N // 2]))
+    >>> plt.ylabel('Amplitude')
+    >>> plt.xlabel('Frequency [Hz]')
     >>> plt.grid()
     >>> plt.show()
 
@@ -108,24 +110,26 @@ and shows the effect of windowing (the zero component of the FFT has been
 truncated for illustrative purposes).
 
 .. plot::
-    :alt: "..."
+    :alt: "This code generates an X-Y log-linear plot with amplitude on the Y axis vs frequency on the X axis. The first trace is the FFT with two peaks at 50 and 80 Hz and a noise floor around an amplitude of 1e-2. The second trace is the windowed FFT and has the same two peaks but the noise floor is much lower around an amplitude of 1e-7 due to the window function."
 
     >>> from scipy.fft import fft, fftfreq
     >>> # Number of sample points
     >>> N = 600
-    >>> # sample spacing
-    >>> T = 1.0 / 800.0
-    >>> x = np.linspace(0.0, N*T, N, endpoint=False)
-    >>> y = np.sin(50.0 * 2.0*np.pi*x) + 0.5*np.sin(80.0 * 2.0*np.pi*x)
+    >>> # sample period
+    >>> T = 1 / 800
+    >>> x = np.linspace(0, N * T, N, endpoint=False)
+    >>> y = np.sin(50 * 2 * np.pi * x) + 0.5 * np.sin(80 * 2 * np.pi * x)
     >>> yf = fft(y)
     >>> from scipy.signal import blackman
     >>> w = blackman(N)
-    >>> ywf = fft(y*w)
+    >>> ywf = fft(y * w)
     >>> xf = fftfreq(N, T)[:N//2]
     >>> import matplotlib.pyplot as plt
-    >>> plt.semilogy(xf[1:N//2], 2.0/N * np.abs(yf[1:N//2]), '-b')
-    >>> plt.semilogy(xf[1:N//2], 2.0/N * np.abs(ywf[1:N//2]), '-r')
-    >>> plt.legend(['FFT', 'FFT w. window'])
+    >>> plt.semilogy(xf[1:N // 2], 2 / N * np.abs(yf[1:N // 2]), '-b')
+    >>> plt.semilogy(xf[1:N // 2], 2 / N * np.abs(ywf[1:N // 2]), '-r')
+    >>> plt.ylabel('Amplitude')
+    >>> plt.xlabel('Frequency [Hz]')
+    >>> plt.legend(['FFT', 'Windowed FFT'])
     >>> plt.grid()
     >>> plt.show()
 
@@ -153,21 +157,24 @@ The example below plots the FFT of two complex exponentials; note the
 asymmetric spectrum.
 
 .. plot::
-    :alt: "..."
+    :alt: "This code generates an X-Y plot with amplitude on the Y axis vs frequency on the X axis. The trace is zero-valued across the plot except for two sharp peaks at -80 and 50 Hz. The 50 Hz peak on the right is twice as tall."
+
 
     >>> from scipy.fft import fft, fftfreq, fftshift
     >>> # number of signal points
     >>> N = 400
-    >>> # sample spacing
-    >>> T = 1.0 / 800.0
-    >>> x = np.linspace(0.0, N*T, N, endpoint=False)
-    >>> y = np.exp(50.0 * 1.j * 2.0*np.pi*x) + 0.5*np.exp(-80.0 * 1.j * 2.0*np.pi*x)
+    >>> # sample period
+    >>> T = 1 / 800
+    >>> x = np.linspace(0, N * T, N, endpoint=False)
+    >>> y = np.exp(50 * 1.j * 2 * np.pi * x) + 0.5 * np.exp(-80 * 1.j * 2 * np.pi * x)
     >>> yf = fft(y)
     >>> xf = fftfreq(N, T)
     >>> xf = fftshift(xf)
     >>> yplot = fftshift(yf)
     >>> import matplotlib.pyplot as plt
-    >>> plt.plot(xf, 1.0/N * np.abs(yplot))
+    >>> plt.plot(xf, 1 / N * np.abs(yplot))
+    >>> plt.ylabel('Amplitude')
+    >>> plt.xlabel('Frequency [Hz]')
     >>> plt.grid()
     >>> plt.show()
 
@@ -235,7 +242,7 @@ The example below demonstrates a 2-D IFFT and plots the resulting
 (2-D) time-domain signals.
 
 .. plot::
-    :alt: "..."
+    :alt: "This code generates six heatmaps arranged in a 2x3 grid. The top row shows mostly blank canvases with the exception of two tiny red peaks on each image. The bottom row shows the real-part of the inverse FFT of each image above it. The first column has two dots arranged horizontally in the top image and in the bottom image a smooth grayscale plot of 5 black vertical stripes representing the 2-D time domain signal. The second column has two dots arranged vertically in the top image and in the bottom image a smooth grayscale plot of 5 horizontal black stripes representing the 2-D time domain signal. In the last column the top image has two dots diagonally located; the corresponding image below has perhaps 20 black stripes at a 60 degree angle."
 
     >>> from scipy.fft import ifftn
     >>> import matplotlib.pyplot as plt
@@ -431,28 +438,30 @@ provides a five-fold compression rate.
 
 
 .. plot::
-    :alt: "..."
+    :alt: "This code generates an X-Y plot showing amplitude on the Y axis and time on the X axis. The first blue trace is the original signal and starts at amplitude 1 and oscillates down to 0 amplitude over the duration of the plot resembling a frequency chirp. The second red trace is the x_20 reconstruction using the DCT and closely follows the original signal in the high amplitude region but it is unclear to the right side of the plot. The third green trace is the x_15 reconstruction using the DCT and is less precise than the x_20 reconstruction but still similar to x."
 
     >>> from scipy.fft import dct, idct
     >>> import matplotlib.pyplot as plt
     >>> N = 100
-    >>> t = np.linspace(0,20,N, endpoint=False)
-    >>> x = np.exp(-t/3)*np.cos(2*t)
+    >>> t = np.linspace(0, 20, N, endpoint=False)
+    >>> x = np.exp(-t / 3) * np.cos(2 * t)
     >>> y = dct(x, norm='ortho')
     >>> window = np.zeros(N)
     >>> window[:20] = 1
-    >>> yr = idct(y*window, norm='ortho')
-    >>> sum(abs(x-yr)**2) / sum(abs(x)**2)
+    >>> yr = idct(y * window, norm='ortho')
+    >>> sum(abs(x - yr)**2) / sum(abs(x)**2)
     0.0009872817275276098
     >>> plt.plot(t, x, '-bx')
     >>> plt.plot(t, yr, 'ro')
     >>> window = np.zeros(N)
     >>> window[:15] = 1
     >>> yr = idct(y*window, norm='ortho')
-    >>> sum(abs(x-yr)**2) / sum(abs(x)**2)
+    >>> sum(abs(x - yr)**2) / sum(abs(x)**2)
     0.06196643004256714
     >>> plt.plot(t, yr, 'g+')
     >>> plt.legend(['x', '$x_{20}$', '$x_{15}$'])
+    >>> plt.ylabel('Amplitude')
+    >>> plt.xlabel('Time')
     >>> plt.grid()
     >>> plt.show()
 
