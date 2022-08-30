@@ -11,7 +11,7 @@ authors:
     corresponding: true
     orcid: 0000-0001-9816-1416
   - name: Art B. Owen
-    affiliation: 1
+    affiliation: 2
     orcid: 0000-0001-5860-3945
   - name: Matt Haberland
     affiliation: 3
@@ -49,6 +49,17 @@ better convergence rate than traditional Monte Carlo sampling (used by NumPy).
 QMC methods where added to SciPy [@virtanen2020scipy] after an extensive review
 and discussion period [@scipy2021qmc] that lead to a great collaboration
 between SciPy's maintainers and renown researchers in the field.
+
+The following set of features is currently available:
+
+- Sobol' and Halton sequences (scrambled and unscrambled),
+- Latin Hypercube Sampling (centred, optimized on $C^2$, orthogonal),
+- Poisson disk,
+- Multinomial and multivariate normal,
+- Discrepancy measures ($C^2$, wrap around, star-$L_2$, mixed),
+- Optimize a sample using $C^2$ or Lloyd-Max iterations,
+- Scaling utilities,
+- Fast numerical inverse methods to sample arbitrary distributions with QMC.
 
 Before the release of SciPy 1.7.0, the need for these functions was partially
 met in the scientific Python ecosystem by tutorials (e.g. blog posts)
