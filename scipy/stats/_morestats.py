@@ -2784,7 +2784,7 @@ def levene(*samples, center='median', proportiontocut=0.05):
     The value of the statistic tends to be high when there is a large
     difference in variances.
 
-    We can test for ineuqality of variance among the groups by comparing the
+    We can test for inequality of variance among the groups by comparing the
     observed value of the statistic against the null distribution: the
     distribution of statistic values derived under the null hypothesis that
     the population variances of the three groups are equal.
