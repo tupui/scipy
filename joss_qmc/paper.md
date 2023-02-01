@@ -38,32 +38,44 @@ bibliography: paper.bib
 
 # Statement of need
 
-NumPy random number generators (`numpy.random`) have become the de-facto standard
-for sampling random numbers in the scientific Python ecosystem.
+NumPy random number generators (`numpy.random`) have become the de-facto
+standard for sampling random numbers in the scientific Python ecosystem.
 These methods are fast and reliable, and the results are repeatable when a
-random seed is provided. However, sampling in high dimensions produces a lot of
-gaps and clusters of points. In integration problems, these classical "Monte Carlo"
-methods have a low convergence rate meaning that a large sample size is required
-to achieve good accuracy. 
+seed is provided. As a foundational tool, NumPy only provides classical
+Monte Carlo (MC) methods. Sampling in high dimensions with MC produces a lot of
+gaps and clusters of points. When these random numbers are used in algorithms
+to solve deterministic problems, the resulting MC methods have a low
+convergence rate. In practice, this can mean that substantial computational
+resources are required to provide sufficient accuracy.
 
-By construction, Quasi-Monte Carlo (QMC) methods provide efficient, deterministic
-(or not) high quality sample generators that can advantageously replace traditional
-methods. This can be decisive when the sampling size is limited or strong
-reproducibility guarantee is required. QMC methods are known to have better
-convergence rates than traditional Monte Carlo sampling (as implmented by NumPy).
+In Quasi-Monte Carlo (QMC) methods [@owen2019], the random numbers of Monte
+Carlo methods are replaced with a deterministic sequence of numbers that
+possesses many of the characteristics of a random sequence
+(e.g. reduction of variance with the sample size), but without these gaps
+and clusters. QMC determinism is implementation, language and platform,
+independent. The sequence is mathematically defined. 
+
+In many cases, a QMC sequence can be used as a drop-in
+replacement for a random number sequence, yet they are proven to provide faster
+convergence rates. When true stochasticity is required (e.g. statistical
+inference), QMC sequences can be "scrambled" using random numbers, and several
+smaller scrambled QMC sequences can often replace one large random sequence.
 
 QMC methods were added to SciPy [@virtanen2020scipy] after an extensive review
 and discussion period [@scipy2021qmc] that lead to a very fruitful collaboration
 between SciPy's maintainers and renowned researchers in the field.
+Our implementation work inspired additional work on highlighting the importance
+of including the first point in the Sobol' sequence [owen2020].
 
-The following set of features QMC are currently available in SciPy:
+The following set of QMC features are currently available in SciPy:
 
 - Sobol' and Halton sequences (scrambled and unscrambled),
 - Poisson disk sampling,
 - Quasi-random multinomial and multivariate normal sampling,
 - Discrepancy measures ($C^2$, wrap around, star-$L_2$, mixed),
-- Latin Hypercube Sampling (centred, optimized on $C^2$, orthogonal),
-- Optimize a sample using $C^2$ or Lloyd-Max iterations,
+- Latin Hypercube Sampling (centred, strength 1 or 2),
+- Optimize a sample my minimizing $C^2$ discrepancy or performing Lloyd-Max
+  iterations,
 - Scaling utilities,
 - Fast numerical inverse methods to sample arbitrary distributions with QMC.
 
@@ -71,19 +83,29 @@ Before the release of SciPy 1.7.0, the need for these functions was partially
 met in the scientific Python ecosystem by tutorials (e.g. blog posts)
 and niche packages, but the functions in SciPy have several advantages:
 
-- Popularity: with an estimated 5 million download per month, SciPy is one of the most downloaded scientific Python packages. New features immediatelly reach a wide range of users from all fields.
-- Performance: The low level functions are written in compiled languages such as Cython and optimized for speed and efficiency.
-- Consistency: The APIs comply with the high standards of SciPy, function API reference and tutorials are thorough, and the interfaces share common features complementing other SciPy functions.
-- Quality: As with all SciPy code, these functions were rigorously peer-reviewed and are extensively unit-tested. In addition, theimplementation has been extensively tested in collaboration with the foremost experts in the field.
+- Popularity: with an estimated 5 million download per month, SciPy is one of
+  the most downloaded scientific Python packages. New features immediately
+  reach a wide range of users from all fields.
+- Performance: The low level functions are written in compiled languages such
+  as Cython and optimized for speed and efficiency.
+- Consistency: The APIs comply with the high standards of SciPy, function API
+  reference and tutorials are thorough, and the interfaces share common
+  features complementing other SciPy functions.
+- Quality: As with all SciPy code, these functions were rigorously
+  peer-reviewed for code quality and are extensively unit-tested. In addition,
+  the implementations were produced in collaboration with the foremost experts
+  in the QMC field.
 
 Since the first release of all these new features, we have seen other libraries
 add support for and rely on SciPy's implementations,
-e.g. [@optuna2022qmc; @salib2022qmc].
+e.g. Optuna [@optuna2022qmc] and SALib [@salib2022qmc].
 
 # Acknowledgements
 
 The authors thank professors Sergei Kucherenko (Imperial College London) and
 Fred Hickernell (Illinois Institute of Technology) for helpful discussions.
-The SciPy maintainer team provided support and help regarding the design and integration.
+The SciPy maintainer team provided support and help regarding the design and
+integration, notably Ralf Gommers (Quansight) and
+Tyler J. Reddy (Los Alamos National Laboratory).
 
 # References
