@@ -74,10 +74,12 @@ The following set of QMC features are currently available in SciPy:
 - Quasi-random multinomial and multivariate normal sampling,
 - Discrepancy measures ($C^2$, wrap around, star-$L_2$, mixed),
 - Latin Hypercube Sampling (centred, strength 1 or 2),
-- Optimize a sample my minimizing $C^2$ discrepancy or performing Lloyd-Max
+- Optimize a sample by minimizing $C^2$ discrepancy or performing Lloyd-Max
   iterations,
 - Scaling utilities,
 - Fast numerical inverse methods to sample arbitrary distributions with QMC.
+  Additional methods have been later added. They wrap the UNU.RAN library
+  [unuran2022].
 
 Before the release of SciPy 1.7.0, the need for these functions was partially
 met in the scientific Python ecosystem by tutorials (e.g. blog posts)
