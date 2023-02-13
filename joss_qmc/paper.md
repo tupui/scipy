@@ -44,6 +44,7 @@ These methods are fast and reliable, and the results are repeatable when a
 seed is provided. As a foundational tool, NumPy only provides classical
 Monte Carlo (MC) methods. Sampling in high dimensions with MC produces a lot of
 gaps and clusters of points. When these random numbers are used in algorithms
+(including sampling, numerical integration, optimization)
 to solve deterministic problems, the resulting MC methods have a low
 convergence rate. In practice, this can mean that substantial computational
 resources are required to provide sufficient accuracy.
@@ -52,14 +53,14 @@ In Quasi-Monte Carlo (QMC) methods [@owen2019], the random numbers of Monte
 Carlo methods are replaced with a deterministic sequence of numbers that
 possesses many of the characteristics of a random sequence
 (e.g. reduction of variance with the sample size), but without these gaps
-and clusters. QMC determinism is implementation, language and platform,
-independent. The sequence is mathematically defined. 
+and clusters. QMC determinism is independent of is implementation,
+language, and platform -- the sequence is mathematically defined. 
 
 In many cases, a QMC sequence can be used as a drop-in
 replacement for a random number sequence, yet they are proven to provide faster
-convergence rates. When true stochasticity is required (e.g. statistical
-inference), QMC sequences can be "scrambled" using random numbers, and several
-smaller scrambled QMC sequences can often replace one large random sequence.
+convergence rates (both in theory and practice).
+When true stochasticity is required (e.g. statistical
+inference), QMC sequences can be "scrambled" using random numbers, and several smaller scrambled QMC sequences can often replace one large random sequence.
 
 QMC methods were added to SciPy [@virtanen2020scipy] after an extensive review
 and discussion period [@scipy2021qmc] that lead to a very fruitful collaboration
