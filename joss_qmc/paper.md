@@ -38,21 +38,20 @@ bibliography: paper.bib
 
 # Statement of need
 
-NumPy random number generators (`numpy.random`) have become the de-facto
+NumPy pseudorandom number generators (`numpy.random`) have become the de-facto
 standard for sampling random numbers in the scientific Python ecosystem.
 These methods are fast and reliable, and the results are repeatable when a
-seed is provided. As a foundational tool, NumPy only provides classical
-Monte Carlo (MC) methods. Sampling in high dimensions with MC produces a lot of
+seed is provided. However, sampling in high dimensions with pseudorandom numbers tends to produce
 gaps and clusters of points. When these random numbers are used in algorithms
 (including sampling, numerical integration, optimization)
-to solve deterministic problems, the resulting MC methods have a low
+to solve deterministic problems, the resulting "Monte Carlo" (MC) methods have a low
 convergence rate. In practice, this can mean that substantial computational
 resources are required to provide sufficient accuracy.
 
 In Quasi-Monte Carlo (QMC) methods [@owen2019], the random numbers of Monte
 Carlo methods are replaced with a deterministic sequence of numbers that
 possesses many of the characteristics of a random sequence
-(e.g. reduction of variance with the sample size), but without these gaps
+(e.g. reduction of variance with increasing sample size), but without these gaps
 and clusters. QMC determinism is independent of is implementation,
 language, and platform -- the sequence is mathematically defined. 
 
@@ -65,28 +64,26 @@ inference), QMC sequences can be "scrambled" using random numbers, and several s
 QMC methods were added to SciPy [@virtanen2020scipy] after an extensive review
 and discussion period [@scipy2021qmc] that lead to a very fruitful collaboration
 between SciPy's maintainers and renowned researchers in the field.
-Our implementation work inspired additional work on highlighting the importance
-of including the first point in the Sobol' sequence [owen2020].
+For instance, our implementation inspired additional work on the importance
+of including the first point in the Sobol' sequence [@owen2020].
 
-The following set of QMC features are currently available in SciPy:
+The following set of QMC features are now available in SciPy:
 
 - Sobol' and Halton sequences (scrambled and unscrambled),
 - Poisson disk sampling,
 - Quasi-random multinomial and multivariate normal sampling,
 - Discrepancy measures ($C^2$, wrap around, star-$L_2$, mixed),
-- Latin Hypercube Sampling (centred, strength 1 or 2),
+- Latin Hypercube Sampling (centered, strength 1 or 2),
 - Optimize a sample by minimizing $C^2$ discrepancy or performing Lloyd-Max
   iterations,
-- Scaling utilities,
-- Fast numerical inverse methods to sample arbitrary distributions with QMC.
-  Additional methods have been later added. They wrap the UNU.RAN library
-  [unuran2022].
+- Fast numerical inverse methods to sample arbitrary univariate distributions with QMC [@unuran2022].
+- QMC integration
 
 Before the release of SciPy 1.7.0, the need for these functions was partially
 met in the scientific Python ecosystem by tutorials (e.g. blog posts)
 and niche packages, but the functions in SciPy have several advantages:
 
-- Popularity: with an estimated 5 million download per month, SciPy is one of
+- Popularity: with millions of downloads per month, SciPy is one of
   the most downloaded scientific Python packages. New features immediately
   reach a wide range of users from all fields.
 - Performance: The low level functions are written in compiled languages such
