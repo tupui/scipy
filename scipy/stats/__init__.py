@@ -593,6 +593,7 @@ from ._stats_py import *
 from ._variation import variation
 from .distributions import *
 from ._morestats import *
+from ._multicomp import *
 from ._binomtest import binomtest
 from ._binned_statistic import *
 from ._kde import gaussian_kde
