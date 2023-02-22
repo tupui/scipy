@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 
 __all__ = [
+    'dunnett'
 ]
 
 
@@ -107,6 +108,7 @@ def dunnett(observations, control, *, alternative="two-sided"):
         raise ValueError(msg)
 
     n_groups = observations.shape[0]
+    # From Dunnett1955 p. 1100 d.f. = (sum N)-(p+1)
     df = n_obs + n_control - n_groups - 1
 
     ttest = stats.ttest_ind(
