@@ -394,6 +394,7 @@ Others are generalized to multiple samples.
 
    f_oneway
    tukey_hsd
+   dunnett
    kruskal
    alexandergovern
    fligner
