@@ -84,6 +84,10 @@ def dunnett(observations, control, *, alternative="two-sided"):
        Several Treatments with a Control."
        Journal of the American Statistical Association, 50:272, 1096-1121,
        :doi:`10.1080/01621459.1955.10501294`, 1955.
+    .. [2] K.S. Kwong, W. Liu. "Calculation of critical values for Dunnett
+       and Tamhane’s step-up multiple test procedure."
+       Statistics and Probability Letters, 49, 411-416,
+       :doi:`10.1016/S0167-7152(00)00076-6`, 2000.
 
     Examples
     --------
@@ -105,17 +109,31 @@ def dunnett(observations, control, *, alternative="two-sided"):
     n_groups = observations.shape[0]
     df = n_obs + n_control - n_groups - 1
 
-    sigma = np.full((n_groups, n_groups), 0.5)
-    np.fill_diagonal(sigma, 1)
-
     ttest = stats.ttest_ind(
         observations, control, axis=-1, alternative=alternative
     )
     statistic = ttest.statistic
+
+    pvalue = pvalue_dunnett(
+        n_groups=n_groups, df=df, statistic=statistic, alternative=alternative
+    )
+
+    return DunnettResult(statistic=statistic, pvalue=pvalue)
+
+
+def pvalue_dunnett(n_groups, df, statistic, alternative):
+    """pvalue from Dunnett critical value.
+
+    Critical values come from the multivariate student-t distribution.
+    """
+    rho = np.full((n_groups, n_groups), 0.5)
+    # from "Calculation of critical values for Dunnett and Tamhane’s step-up
+    # multiple test procedure" p. 412
+    np.fill_diagonal(rho, 1)
     statistic_ = statistic.reshape(-1, 1)
-    pvalue = 1 - stats.multivariate_t(shape=sigma, df=df).cdf(statistic_)
+    pvalue = 1 - stats.multivariate_t(shape=rho, df=df).cdf(statistic_)
 
     if alternative == "two-sided":
         pvalue *= 2
 
-    return DunnettResult(statistic=statistic, pvalue=pvalue)
+    return pvalue
