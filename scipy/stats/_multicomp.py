@@ -6,6 +6,7 @@ from typing import (
 )
 
 import numpy as np
+from numpy.testing import suppress_warnings
 
 from scipy import stats
 
@@ -26,7 +27,7 @@ class DunnettResult:
     pvalue: np.ndarray
 
 
-def dunnett(observations, control, *, alternative="two-sided"):
+def dunnett(*observations, control, alternative="two-sided"):
     """Dunnett's test.
 
     Parameters
@@ -94,48 +95,53 @@ def dunnett(observations, control, *, alternative="two-sided"):
     --------
     ...
     """
-    n_obs = np.prod(observations.shape)
-    n_control = control.shape[0]
+    rho, df = rho_df(observations=observations, control=control)
 
-    # should we support different sizes? more complex logic like tukey_hsd
-    # then we need to adjust sigma as not 0.5 for non diag elements
-    # also observations would need to be passed separately
-    if observations.shape[1] != n_control:
-        msg = (
-            "Dunnett's test assume the same number "
-            "of samples in the control group and each observation group"
-        )
-        raise ValueError(msg)
-
-    n_groups = observations.shape[0]
-    # From Dunnett1955 p. 1100 d.f. = (sum N)-(p+1)
-    df = n_obs + n_control - n_groups - 1
-
-    ttest = stats.ttest_ind(
-        observations, control, axis=-1, alternative=alternative
-    )
-    statistic = ttest.statistic
+    with suppress_warnings() as sup:
+        sup.filter(RuntimeWarning)
+        statistic = np.array([
+            stats.ttest_ind(
+                obs_, control, alternative=alternative
+            ).statistic
+            for obs_ in observations
+        ])
 
     pvalue = pvalue_dunnett(
-        n_groups=n_groups, df=df, statistic=statistic, alternative=alternative
+        rho=rho, df=df,
+        statistic=statistic, alternative=alternative
     )
 
     return DunnettResult(statistic=statistic, pvalue=pvalue)
 
 
-def pvalue_dunnett(n_groups, df, statistic, alternative):
+def rho_df(observations, control):
+    n_n_obs = np.array([len(obs_) for obs_ in observations])
+
+    # From Dunnett1955 p. 1100 d.f. = (sum N)-(p+1)
+    n_obs = n_n_obs.sum()
+    n_control = len(control)
+    n = n_obs + n_control
+    n_groups = len(observations)
+    df = n - n_groups - 1
+
+    rho = n_control/n_n_obs + 1
+    rho = 1/np.sqrt(rho[:, None] * rho[None, :])
+    np.fill_diagonal(rho, 1)
+
+    return rho, df
+
+
+def pvalue_dunnett(rho, df, statistic, alternative):
     """pvalue from Dunnett critical value.
 
     Critical values come from the multivariate student-t distribution.
     """
-    rho = np.full((n_groups, n_groups), 0.5)
-    # from "Calculation of critical values for Dunnett and Tamhane’s step-up
-    # multiple test procedure" p. 412
-    np.fill_diagonal(rho, 1)
-    statistic_ = statistic.reshape(-1, 1)
-    pvalue = 1 - stats.multivariate_t(shape=rho, df=df).cdf(statistic_)
+    statistic = np.asarray(statistic).reshape(-1, 1)
 
+    mvt = stats.multivariate_t(shape=rho, df=df)
     if alternative == "two-sided":
-        pvalue *= 2
+        pvalue = 1 - mvt.cdf(statistic, lower_limit=-statistic)
+    else:
+        pvalue = 1 - mvt.cdf(statistic)
 
     return pvalue
