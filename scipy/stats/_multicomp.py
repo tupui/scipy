@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import (
-    Callable, Literal, Protocol, TYPE_CHECKING
+    Literal, TYPE_CHECKING
 )
 
 import numpy as np
@@ -13,7 +13,6 @@ from scipy import stats
 
 if TYPE_CHECKING:
     import numpy.typing as npt
-    from scipy._lib._util import DecimalNumber, IntNumber, SeedType
 
 
 __all__ = [
@@ -27,16 +26,17 @@ class DunnettResult:
     pvalue: np.ndarray
 
 
-def dunnett(*observations, control, alternative="two-sided"):
+def dunnett(
+    *observations: npt.ArrayLike, control: npt.ArrayLike,
+    alternative: Literal['two-sided', 'less', 'greater'] = "two-sided"
+) -> DunnettResult:
     """Dunnett's test.
 
     Parameters
     ----------
-    observations : array_like, n-D
+    observations1, observations2, ... : 1D array_like
         The sample measurements for each experiment group.
-        With `observations` of shape ``(k, n)``, with ``k`` the number of
-        groups and ``n`` the number of sample.
-    control : array_like, 1D
+    control : 1D array_like
         The sample measurements for the control group.
     alternative : {'two-sided', 'less', 'greater'}, optional
         Defines the alternative hypothesis.
@@ -95,7 +95,7 @@ def dunnett(*observations, control, alternative="two-sided"):
     --------
     ...
     """
-    rho, df = rho_df(observations=observations, control=control)
+    rho, df = rho_df_dunnett(observations=observations, control=control)
 
     with suppress_warnings() as sup:
         sup.filter(RuntimeWarning)
@@ -114,7 +114,21 @@ def dunnett(*observations, control, alternative="two-sided"):
     return DunnettResult(statistic=statistic, pvalue=pvalue)
 
 
-def rho_df(observations, control):
+def rho_df_dunnett(
+    observations: npt.ArrayLike, control: npt.ArrayLike
+) -> tuple[np.ndarray, int]:
+    """Specific parameters for Dunnett's test.
+
+    Covariance matrix depends on the number of observations in each group:
+
+    - All groups are equals (including the control), ``rho_ij=0.5`` except for
+      the diagonal which is 1.
+    - All groups but the control are equal, balanced design.
+    - Groups are not equal, unbalanced design.
+
+    Degree of freedom is the number of observations minus the number of groups
+    including the control.
+    """
     n_n_obs = np.array([len(obs_) for obs_ in observations])
 
     # From Dunnett1955 p. 1100 d.f. = (sum N)-(p+1)
@@ -124,6 +138,7 @@ def rho_df(observations, control):
     n_groups = len(observations)
     df = n - n_groups - 1
 
+    # rho_ij = 1/sqrt((N0/Ni+1)(N0/Nj+1))
     rho = n_control/n_n_obs + 1
     rho = 1/np.sqrt(rho[:, None] * rho[None, :])
     np.fill_diagonal(rho, 1)
@@ -131,12 +146,15 @@ def rho_df(observations, control):
     return rho, df
 
 
-def pvalue_dunnett(rho, df, statistic, alternative):
+def pvalue_dunnett(
+    rho: np.ndarray, df: int, statistic: np.ndarray,
+    alternative: Literal['two-sided', 'less', 'greater']
+) -> np.ndarray:
     """pvalue from Dunnett critical value.
 
     Critical values come from the multivariate student-t distribution.
     """
-    statistic = np.asarray(statistic).reshape(-1, 1)
+    statistic = statistic.reshape(-1, 1)
 
     mvt = stats.multivariate_t(shape=rho, df=df)
     if alternative == "two-sided":

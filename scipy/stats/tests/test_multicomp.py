@@ -43,7 +43,7 @@ class TestDunnett:
         rho = np.full((n_groups, n_groups), 0.5)
         np.fill_diagonal(rho, 1)
 
-        statistic = np.asarray(statistic)
+        statistic = np.array(statistic)
         res = pvalue_dunnett(
             rho=rho, df=df, statistic=statistic,
             alternative=alternative
