@@ -93,7 +93,57 @@ def dunnett(
 
     Examples
     --------
-    ...
+    In [1]_, the influence of drugs on blood count measurements on three groups
+    of animal is investigated.
+
+    The following table summarizes the results of the experiment in which
+    two groups received different drug, and one group acted as a control.
+    Blood counts (in millions of cells per cubic millimeter) were recorded::
+
+         Control      Drug A      Drug B
+           7.40        9.76        12.80
+           8.50        8.80         9.68
+           7.20        7.68        12.16
+           8.24        9.36         9.20
+           9.84                    10.55
+           8.32
+
+    >>> import numpy as np
+    >>> control = np.array([7.40, 8.50, 7.20, 8.24, 9.84, 8.32])
+    >>> drug_a = np.array([9.76, 8.80, 7.68, 9.36])
+    >>> drug_b = np.array([12.80, 9.68, 12.16, 9.20, 10.55])
+
+    The `dunnett` statistic is sensitive to the difference in means between
+    the samples.
+
+    We would like to see if the means between any of the groups are
+    significantly different. First, visually examine a box and whisker plot.
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig, ax = plt.subplots(1, 1)
+    >>> ax.boxplot([control, drug_a, drug_b])
+    >>> ax.set_xticklabels(["Control", "Drug A", "Drug B"])  # doctest: +SKIP
+    >>> ax.set_ylabel("mean")  # doctest: +SKIP
+    >>> plt.show()
+
+    From the box and whisker plot, we can see overlap in the interquartile
+    ranges between the control group and the group from drug A.
+    We can apply the `dunnett`
+    test to determine if the difference between means is significant. We
+    set a significance level of .05 to reject the null hypothesis.
+
+    >>> from scipy.stats import dunnett
+    >>> res = dunnett(drug_a, drug_b, control=control)
+    >>> res.pvalue
+    array([0.47773146, 0.00889328])
+
+    The null hypothesis is that each group has the same mean. The p-value for
+    comparisons between ``control`` and ``drug_b`` do not exceed .05,
+    so we reject the null hypothesis that they
+    have the same means. The p-value of the comparison between ``control``
+    and ``drug_a`` exceeds .05, so we accept the null hypothesis that there
+    is not a significant difference between their means.
+
     """
     rho, df = rho_df_dunnett(observations=observations, control=control)
 

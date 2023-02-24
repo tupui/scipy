@@ -3,7 +3,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 from scipy import stats
-from scipy.stats._multicomp import pvalue_dunnett
+from scipy.stats._multicomp import pvalue_dunnett, DunnettResult
 
 
 class TestDunnett:
@@ -72,5 +72,7 @@ class TestDunnett:
         ref = np.array([4.727e-06, 0.022346, 0.97912, 0.99953, 0.86579])
 
         res = stats.dunnett(*observations, control=control)
+
+        assert isinstance(res, DunnettResult)
         # last value is problematic
         assert_allclose(res.pvalue[:-1], ref[:-1], atol=0.015)
