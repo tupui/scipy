@@ -40,17 +40,20 @@ class TestDunnett:
     def test_critical_values(
         self, n_groups, df, statistic, pvalue, alternative
     ):
+        rng = np.random.default_rng(165250594791731684851746311027739134893)
         rho = np.full((n_groups, n_groups), 0.5)
         np.fill_diagonal(rho, 1)
 
         statistic = np.array(statistic)
         res = pvalue_dunnett(
             rho=rho, df=df, statistic=statistic,
-            alternative=alternative
+            alternative=alternative,
+            rng=rng
         )
         assert_allclose(res, pvalue, atol=5e-3)
 
     def test_imbalanced(self):
+        rng = np.random.default_rng(11681140010308601919115036826969764808)
         observations = [
             [
                 24.0, 27.0, 33.0, 32.0, 28.0, 19.0, 37.0, 31.0, 36.0, 36.0,
@@ -71,7 +74,7 @@ class TestDunnett:
         ]
         ref = np.array([4.727e-06, 0.022346, 0.97912, 0.99953, 0.86579])
 
-        res = stats.dunnett(*observations, control=control)
+        res = stats.dunnett(*observations, control=control, random_state=rng)
 
         assert isinstance(res, DunnettResult)
         # last value is problematic

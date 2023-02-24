@@ -9,10 +9,11 @@ import numpy as np
 from numpy.testing import suppress_warnings
 
 from scipy import stats
-
+from scipy.stats._qmc import check_random_state
 
 if TYPE_CHECKING:
     import numpy.typing as npt
+    from scipy._lib._util import SeedType
 
 
 __all__ = [
@@ -28,7 +29,8 @@ class DunnettResult:
 
 def dunnett(
     *observations: npt.ArrayLike, control: npt.ArrayLike,
-    alternative: Literal['two-sided', 'less', 'greater'] = "two-sided"
+    alternative: Literal['two-sided', 'less', 'greater'] = "two-sided",
+    random_state: SeedType = None
 ) -> DunnettResult:
     """Dunnett's test.
 
@@ -50,6 +52,11 @@ def dunnett(
         * 'greater': the mean of the distribution underlying the first
           sample is greater than the mean of the distribution underlying
           the second sample.
+    random_state : {None, int, `numpy.random.Generator`}, optional
+        If `random_state` is an int or None, a new `numpy.random.Generator` is
+        created using ``np.random.default_rng(random_state)``.
+        If `random_state` is already a ``Generator`` instance, then the
+        provided instance is used.
 
     Returns
     -------
@@ -135,7 +142,7 @@ def dunnett(
     >>> from scipy.stats import dunnett
     >>> res = dunnett(drug_a, drug_b, control=control)
     >>> res.pvalue
-    array([0.47773146, 0.00889328])
+    array([0.47773146, 0.00889328])  # random
 
     The null hypothesis is that each group has the same mean. The p-value for
     comparisons between ``control`` and ``drug_b`` do not exceed .05,
@@ -145,20 +152,22 @@ def dunnett(
     is not a significant difference between their means.
 
     """
+    rng = check_random_state(random_state)
     rho, df = rho_df_dunnett(observations=observations, control=control)
 
     with suppress_warnings() as sup:
         sup.filter(RuntimeWarning)
         statistic = np.array([
             stats.ttest_ind(
-                obs_, control, alternative=alternative
+                obs_, control, alternative=alternative, random_state=rng
             ).statistic
             for obs_ in observations
         ])
 
     pvalue = pvalue_dunnett(
         rho=rho, df=df,
-        statistic=statistic, alternative=alternative
+        statistic=statistic, alternative=alternative,
+        rng=rng
     )
 
     return DunnettResult(statistic=statistic, pvalue=pvalue)
@@ -198,7 +207,8 @@ def rho_df_dunnett(
 
 def pvalue_dunnett(
     rho: np.ndarray, df: int, statistic: np.ndarray,
-    alternative: Literal['two-sided', 'less', 'greater']
+    alternative: Literal['two-sided', 'less', 'greater'],
+    rng: SeedType = None
 ) -> np.ndarray:
     """pvalue from Dunnett critical value.
 
@@ -206,7 +216,7 @@ def pvalue_dunnett(
     """
     statistic = statistic.reshape(-1, 1)
 
-    mvt = stats.multivariate_t(shape=rho, df=df)
+    mvt = stats.multivariate_t(shape=rho, df=df, seed=rng)
     if alternative == "two-sided":
         pvalue = 1 - mvt.cdf(statistic, lower_limit=-statistic)
     else:
