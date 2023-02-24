@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import (
-    Literal, TYPE_CHECKING
-)
+from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.testing import suppress_warnings
 
 from scipy import stats
 from scipy.optimize import minimize_scalar
+from scipy.stats._common import ConfidenceInterval
 from scipy.stats._qmc import check_random_state
 
 if TYPE_CHECKING:
     import numpy.typing as npt
     from scipy._lib._util import DecimalNumber, SeedType
+    from typing import Literal
 
 
 __all__ = [
@@ -29,13 +29,26 @@ class DunnettResult:
     _rho: np.ndarray
     _df: int
     _std: float
+    _observations_mean: np.ndarray
+    _control_mean: np.ndarray
 
-    def allowance(self, confidence_level: DecimalNumber = 0.95) -> float:
+    def _allowance(self, confidence_level: DecimalNumber = 0.95) -> float:
         """Allowance.
 
         It is the quantity to add/substract from the observed difference
         between the means of observed groups and the mean of the control
         group. The result gives confidence limits.
+
+        Parameters
+        ----------
+        confidence_level : float, optional
+            Confidence level for the computed confidence interval
+            of the estimated proportion. Default is .95.
+
+        Returns
+        -------
+        allowance : float
+            Allowance around the mean.
         """
         dist = stats.multivariate_t(shape=self._rho, df=self._df)
         alpha = 1 - confidence_level
@@ -51,6 +64,36 @@ class DunnettResult:
 
         allowance = critical_value*self._std*np.sqrt(2/len(self.pvalue))
         return allowance
+
+    def confidence_interval(
+        self, confidence_level: DecimalNumber = 0.95
+    ) -> ConfidenceInterval:
+        """Compute the confidence interval for the specified confidence level.
+
+        The confidence interval corresponds to the mean of the groups
+        +- the allowance.
+
+        Parameters
+        ----------
+        confidence_level : float, optional
+            Confidence level for the computed confidence interval
+            of the estimated proportion. Default is .95.
+
+        Returns
+        -------
+        ci : ``ConfidenceInterval`` object
+            The object has attributes ``low`` and ``high`` that hold the
+            lower and upper bounds of the confidence intervals for each
+            comparison. The high and low values are accessible for each
+            comparison at index ``(i, j)`` between groups ``i`` and ``j``.
+
+        """
+        allowance = self._allowance(confidence_level=confidence_level)
+        diff_means = self._observations_mean - self._control_mean
+        return ConfidenceInterval(
+            low=diff_means-allowance,
+            high=diff_means+allowance
+        )
 
 
 def dunnett(
@@ -211,6 +254,8 @@ def dunnett(
     return DunnettResult(
         statistic=statistic, pvalue=pvalue,
         _rho=rho, _df=df, _std=std,
+        _observations_mean=observations_mean,
+        _control_mean=control_mean
     )
 
 

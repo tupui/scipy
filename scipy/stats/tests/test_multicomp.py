@@ -95,5 +95,9 @@ class TestDunnett:
         control = [55, 47, 48]
 
         res = stats.dunnett(*observations, control=control, random_state=rng)
-        allowance = res.allowance(confidence_level=0.95)
+        allowance = res._allowance(confidence_level=0.95)
         assert allowance == pytest.approx(11, rel=1)
+
+        ci = res.confidence_interval(confidence_level=0.95)
+        assert_allclose(ci.low, [0, -9, -16], atol=1)
+        assert_allclose(ci.high, [22, 13, 6], atol=1)
