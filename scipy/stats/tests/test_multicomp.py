@@ -84,3 +84,16 @@ class TestDunnett:
         assert isinstance(res, DunnettResult)
         # last value is problematic
         assert_allclose(res.pvalue[:-1], ref[:-1], atol=0.015)
+
+    def test_allowance(self):
+        rng = np.random.default_rng(189117774084579816190295271136455278291)
+        observations = [
+            [55, 64, 64],
+            [55, 49, 52],
+            [50, 44, 41]
+        ]
+        control = [55, 47, 48]
+
+        res = stats.dunnett(*observations, control=control, random_state=rng)
+        allowance = res.allowance(confidence_level=0.95)
+        assert allowance == pytest.approx(11, rel=1)

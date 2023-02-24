@@ -9,11 +9,12 @@ import numpy as np
 from numpy.testing import suppress_warnings
 
 from scipy import stats
+from scipy.optimize import minimize_scalar
 from scipy.stats._qmc import check_random_state
 
 if TYPE_CHECKING:
     import numpy.typing as npt
-    from scipy._lib._util import SeedType
+    from scipy._lib._util import DecimalNumber, SeedType
 
 
 __all__ = [
@@ -25,6 +26,31 @@ __all__ = [
 class DunnettResult:
     statistic: np.ndarray
     pvalue: np.ndarray
+    _rho: np.ndarray
+    _df: int
+    _std: float
+
+    def allowance(self, confidence_level: DecimalNumber = 0.95) -> float:
+        """Allowance.
+
+        It is the quantity to add/substract from the observed difference
+        between the means of observed groups and the mean of the control
+        group. The result gives confidence limits.
+        """
+        dist = stats.multivariate_t(shape=self._rho, df=self._df)
+        alpha = 1 - confidence_level
+
+        def pvalue_from_stat(statistic):
+            # two-sided to have +- bounds
+            sf = 1 - dist.cdf(statistic, lower_limit=-statistic)
+            return abs(sf - alpha)
+
+        # scipy.stats.sampling methods are not working for this distribution
+        res = minimize_scalar(pvalue_from_stat, method='brent', tol=1e-4)
+        critical_value = res.x
+
+        allowance = critical_value*self._std*np.sqrt(2/len(self.pvalue))
+        return allowance
 
 
 def dunnett(
@@ -153,7 +179,11 @@ def dunnett(
 
     """
     rng = check_random_state(random_state)
-    rho, df = rho_df_dunnett(observations=observations, control=control)
+    control = np.asarray(control)
+
+    rho, df, n_group = iv_dunnett(
+        observations=observations, control=control
+    )
 
     with suppress_warnings() as sup:
         sup.filter(RuntimeWarning)
@@ -170,12 +200,23 @@ def dunnett(
         rng=rng
     )
 
-    return DunnettResult(statistic=statistic, pvalue=pvalue)
+    control_mean = np.mean(control)
+    observations_mean = np.array([np.mean(obs_) for obs_ in observations])
+    std = np.sqrt((
+        np.sum(control**2)
+        + np.sum([obs_**2 for group in observations for obs_ in group])
+        - n_group*(control_mean**2 + np.sum(observations_mean**2))
+    ) / df)
+
+    return DunnettResult(
+        statistic=statistic, pvalue=pvalue,
+        _rho=rho, _df=df, _std=std,
+    )
 
 
-def rho_df_dunnett(
+def iv_dunnett(
     observations: npt.ArrayLike, control: npt.ArrayLike
-) -> tuple[np.ndarray, int]:
+) -> tuple[np.ndarray, int, int]:
     """Specific parameters for Dunnett's test.
 
     Covariance matrix depends on the number of observations in each group:
@@ -202,7 +243,7 @@ def rho_df_dunnett(
     rho = 1/np.sqrt(rho[:, None] * rho[None, :])
     np.fill_diagonal(rho, 1)
 
-    return rho, df
+    return rho, df, n_groups
 
 
 def pvalue_dunnett(
