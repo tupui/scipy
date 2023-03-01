@@ -97,7 +97,7 @@ class DunnettResult:
 
 
 def dunnett(
-    *observations: npt.ArrayLike, control: npt.ArrayLike,
+    *samples: npt.ArrayLike, control: npt.ArrayLike,
     alternative: Literal['two-sided', 'less', 'greater'] = "two-sided",
     random_state: SeedType = None
 ) -> DunnettResult:
@@ -105,7 +105,7 @@ def dunnett(
 
     Parameters
     ----------
-    observations1, observations2, ... : 1D array_like
+    sample1, sample2, ... : 1D array_like
         The sample measurements for each experiment group.
     control : 1D array_like
         The sample measurements for the control group.
@@ -133,7 +133,7 @@ def dunnett(
         An object containing attributes:
 
         statistic : scalar or ndarray
-            The z-score for the test.  For 1-D inputs a scalar is
+            The t-statistic for the test.  For 1-D inputs a scalar is
             returned.
         pvalue : scalar ndarray
             The p-value for the test.
@@ -144,7 +144,7 @@ def dunnett(
 
     Notes
     -----
-    Dunnett's test [1]_ compares the mean of multiple experiment groups against
+    Dunnett's test [1]_ compares the means of multiple experiment groups against
     a control group. `tukey_hsd` instead, performs pairwise comparison of
     means. It means Dunnett's test performs less tests making it more powerful.
     It should be preferred when there is control group.
