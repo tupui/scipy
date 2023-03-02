@@ -4451,6 +4451,61 @@ add_newdoc("exp1",
 
     """)
 
+
+add_newdoc(
+    "_scaled_exp1",
+    """
+    _scaled_exp1(x, out=None):
+
+    Compute the scaled exponential integral.
+
+    This is a private function, subject to change or removal with no
+    deprecation.
+
+    This function computes F(x), where F is the factor remaining in E_1(x)
+    when exp(-x)/x is factored out.  That is,::
+
+        E_1(x) = exp(-x)/x * F(x)
+
+    or
+
+        F(x) = x * exp(x) * E_1(x)
+
+    The function is defined for real x >= 0.  For x < 0, nan is returned.
+
+    F has the properties:
+
+    * F(0) = 0
+    * F(x) is increasing on [0, inf).
+    * The limit as x goes to infinity of F(x) is 1.
+
+    Parameters
+    ----------
+    x: array_like
+        The input values. Must be real.  The implementation is limited to
+        double precision floating point, so other types will be cast to
+        to double precision.
+    out : ndarray, optional
+        Optional output array for the function results
+
+    Returns
+    -------
+    scalar or ndarray
+        Values of the scaled exponential integral.
+
+    See Also
+    --------
+    exp1 : exponential integral E_1
+
+    Examples
+    --------
+    >>> from scipy.special import _scaled_exp1
+    >>> _scaled_exp1([0, 0.1, 1, 10, 100])
+
+    """
+)
+
+
 add_newdoc("exp10",
     """
     exp10(x, out=None)
@@ -12988,8 +13043,38 @@ add_newdoc("xlogy",
 
     Notes
     -----
+    The log function used in the computation is the natural log.
 
     .. versionadded:: 0.13.0
+
+    Examples
+    --------
+    We can use this function to calculate the binary logistic loss also
+    known as the binary cross entropy. This loss function is used for
+    binary classification problems and is defined as:
+
+    .. math::
+        L = 1/n * \\sum_{i=0}^n -(y_i*log(y\\_pred_i) + (1-y_i)*log(1-y\\_pred_i))
+
+    We can define the parameters `x` and `y` as y and y_pred respectively.
+    y is the array of the actual labels which over here can be either 0 or 1.
+    y_pred is the array of the predicted probabilities with respect to
+    the positive class (1).
+
+    >>> import numpy as np
+    >>> from scipy.special import xlogy
+    >>> y = np.array([0, 1, 0, 1, 1, 0])
+    >>> y_pred = np.array([0.3, 0.8, 0.4, 0.7, 0.9, 0.2])
+    >>> n = len(y)
+    >>> loss = -(xlogy(y, y_pred) + xlogy(1 - y, 1 - y_pred)).sum()
+    >>> loss /= n
+    >>> loss
+    0.29597052165495025
+
+    A lower loss is usually better as it indicates that the predictions are
+    similar to the actual labels. In this example since our predicted
+    probabilties are close to the actual labels, we get an overall loss
+    that is reasonably low and appropriate.
 
     """)
 
