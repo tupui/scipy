@@ -222,10 +222,11 @@ def dunnett(
     is not a significant difference between their means.
 
     """
-    rng = check_random_state(random_state)
-    control = np.asarray(control)
+    samples, control, rng = iv_dunnett(
+        samples=samples, control=control, random_state=random_state
+    )
 
-    rho, df, n_group = iv_dunnett(
+    rho, df, n_group = params_dunnett(
         samples=samples, control=control
     )
 
@@ -261,6 +262,35 @@ def dunnett(
 
 
 def iv_dunnett(
+    samples: npt.ArrayLike, control: npt.ArrayLike, random_state: SeedType
+) -> tuple[npt.ArrayLike, np.ndarray, SeedType]:
+    """Input validation for Dunnett's test."""
+    rng = check_random_state(random_state)
+
+    ndim_msg = "Control and samples groups must be 1D arrays"
+    n_obs_msg = "Control and samples groups must have at least 1 observation"
+
+    # control checks
+    control = np.asarray(control)
+    if control.ndim > 1:
+        raise ValueError(ndim_msg)
+
+    if len(control) < 1:
+        raise ValueError(n_obs_msg)
+
+    # samples checks
+    for sample in samples:
+        sample = np.asarray(sample)
+        if sample.ndim > 1:
+            raise ValueError(ndim_msg)
+
+        if len(sample) < 1:
+            raise ValueError(n_obs_msg)
+
+    return samples, control, rng
+
+
+def params_dunnett(
     samples: npt.ArrayLike, control: npt.ArrayLike
 ) -> tuple[np.ndarray, int, int]:
     """Specific parameters for Dunnett's test.

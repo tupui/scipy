@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose
@@ -103,3 +105,31 @@ class TestDunnett:
         ci = res.confidence_interval(confidence_level=0.95)
         assert_allclose(ci.low, [0, -9, -16], atol=1)
         assert_allclose(ci.high, [22, 13, 6], atol=1)
+
+    def test_raises(self):
+        observations = [
+            [55, 64, 64],
+            [55, 49, 52],
+            [50, 44, 41]
+        ]
+        control = [55, 47, 48]
+
+        observations_ = copy.deepcopy(observations)
+        observations_[0] = [observations_[0]]
+        with pytest.raises(ValueError, match="must be 1D arrays"):
+            stats.dunnett(*observations_, control=control)
+
+        control_ = copy.deepcopy(control)
+        control_ = [control_]
+        with pytest.raises(ValueError, match="must be 1D arrays"):
+            stats.dunnett(*observations, control=control_)
+
+        observations_ = copy.deepcopy(observations)
+        observations_[1] = []
+        with pytest.raises(ValueError, match="at least 1 observation"):
+            stats.dunnett(*observations_, control=control)
+
+        control_ = copy.deepcopy(control)
+        control_ = []
+        with pytest.raises(ValueError, match="at least 1 observation"):
+            stats.dunnett(*observations, control=control_)
