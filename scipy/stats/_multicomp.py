@@ -70,8 +70,8 @@ class DunnettResult:
     ) -> ConfidenceInterval:
         """Compute the confidence interval for the specified confidence level.
 
-        The confidence interval corresponds to the mean of the groups
-        +- the allowance.
+        The confidence interval corresponds to the difference in means of the
+        groups with the control +- the allowance.
 
         Parameters
         ----------
@@ -85,7 +85,7 @@ class DunnettResult:
             The object has attributes ``low`` and ``high`` that hold the
             lower and upper bounds of the confidence intervals for each
             comparison. The high and low values are accessible for each
-            comparison at index ``(i, j)`` between groups ``i`` and ``j``.
+            comparison at index ``(i,)`` for each group ``i``.
 
         """
         allowance = self._allowance(confidence_level=confidence_level)
@@ -114,13 +114,12 @@ def dunnett(
         The following options are available (default is 'two-sided'):
 
         * 'two-sided': the means of the distributions underlying the samples
-          are unequal.
-        * 'less': the mean of the distribution underlying the first sample
-          is less than the mean of the distribution underlying the second
-          sample.
-        * 'greater': the mean of the distribution underlying the first
-          sample is greater than the mean of the distribution underlying
-          the second sample.
+          and control are unequal.
+        * 'less': the means of the distribution underlying the samples
+          is less than the mean of the distribution underlying the control.
+        * 'greater': the means of the distribution underlying the
+          samples is greater than the mean of the distribution underlying
+          the control.
     random_state : {None, int, `numpy.random.Generator`}, optional
         If `random_state` is an int or None, a new `numpy.random.Generator` is
         created using ``np.random.default_rng(random_state)``.
@@ -144,9 +143,11 @@ def dunnett(
 
     Notes
     -----
-    Dunnett's test [1]_ compares the means of multiple experiment groups against
-    a control group. `tukey_hsd` instead, performs pairwise comparison of
-    means. It means Dunnett's test performs less tests making it more powerful.
+    Dunnett's test [1]_ compares the means of multiple experiment groups
+    against a control group.
+    `tukey_hsd` instead, performs pairwise comparison of means.
+    It means Dunnett's test performs fewer tests, hence there is less p-value
+    adjustment which makes the test more powerful.
     It should be preferred when there is control group.
 
     The use of this test relies on several assumptions.
@@ -225,7 +226,7 @@ def dunnett(
     control = np.asarray(control)
 
     rho, df, n_group = iv_dunnett(
-        observations=observations, control=control
+        samples=samples, control=control
     )
 
     with suppress_warnings() as sup:
@@ -234,7 +235,7 @@ def dunnett(
             stats.ttest_ind(
                 obs_, control, alternative=alternative, random_state=rng
             ).statistic
-            for obs_ in observations
+            for obs_ in samples
         ])
 
     pvalue = pvalue_dunnett(
@@ -244,10 +245,10 @@ def dunnett(
     )
 
     control_mean = np.mean(control)
-    observations_mean = np.array([np.mean(obs_) for obs_ in observations])
+    observations_mean = np.array([np.mean(obs_) for obs_ in samples])
     std = np.sqrt((
         np.sum(control**2)
-        + np.sum([obs_**2 for group in observations for obs_ in group])
+        + np.sum([obs_**2 for group in samples for obs_ in group])
         - n_group*(control_mean**2 + np.sum(observations_mean**2))
     ) / df)
 
@@ -260,7 +261,7 @@ def dunnett(
 
 
 def iv_dunnett(
-    observations: npt.ArrayLike, control: npt.ArrayLike
+    samples: npt.ArrayLike, control: npt.ArrayLike
 ) -> tuple[np.ndarray, int, int]:
     """Specific parameters for Dunnett's test.
 
@@ -274,13 +275,13 @@ def iv_dunnett(
     Degree of freedom is the number of observations minus the number of groups
     including the control.
     """
-    n_n_obs = np.array([len(obs_) for obs_ in observations])
+    n_n_obs = np.array([len(obs_) for obs_ in samples])
 
     # From Dunnett1955 p. 1100 d.f. = (sum N)-(p+1)
     n_obs = n_n_obs.sum()
     n_control = len(control)
     n = n_obs + n_control
-    n_groups = len(observations)
+    n_groups = len(samples)
     df = n - n_groups - 1
 
     # rho_ij = 1/sqrt((N0/Ni+1)(N0/Nj+1))
