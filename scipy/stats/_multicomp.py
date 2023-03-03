@@ -241,7 +241,7 @@ def dunnett(
 
     pvalue = pvalue_dunnett(
         rho=rho, df=df,
-        statistic=statistic, alternative=alternative,
+        statistic=abs(statistic), alternative=alternative,
         rng=rng
     )
 

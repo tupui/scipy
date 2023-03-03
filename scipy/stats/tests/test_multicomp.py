@@ -106,6 +106,19 @@ class TestDunnett:
         assert_allclose(ci.low, [0, -9, -16], atol=1)
         assert_allclose(ci.high, [22, 13, 6], atol=1)
 
+    def test_ttest_ind(self):
+        rng = np.random.default_rng(114184017807316971636137493526995620351)
+
+        for _ in range(10):
+            sample = rng.integers(-100, 100, size=(10,))
+            control = rng.integers(-100, 100, size=(10,))
+
+            res = stats.dunnett(sample, control=control,random_state=rng)
+            ref = stats.ttest_ind(sample, control, random_state=rng)
+
+            assert_allclose(res.statistic, ref.statistic, atol=1e-3)
+            assert_allclose(res.pvalue, ref.pvalue, atol=1e-3)
+
     def test_raises(self):
         samples = [
             [55, 64, 64],
