@@ -26,6 +26,7 @@ __all__ = [
 class DunnettResult:
     statistic: np.ndarray
     pvalue: np.ndarray
+    _alternative: Literal['two-sided', 'less', 'greater']
     _rho: np.ndarray
     _df: int
     _std: float
@@ -51,10 +52,21 @@ class DunnettResult:
                   f"{self._ci.low[i]:>10.3f}"
                   f"{self._ci.high[i]:>10.3f}\n")
 
-        s += (
-            "\nTwo-sided alternative: sample i's mean exceed the control's "
-            "mean by an amount betweenLower CI and Upper CI"
-        )
+        if self._alternative == 'less':
+            s += (
+                "\nOne-sided alternative (less): sample i's mean exceed "
+                "the control's mean by an amount at least Lower CI"
+            )
+        elif self._alternative == 'greater':
+            s += (
+                "\nOne-sided alternative (greater): sample i's mean exceed "
+                "the control's mean by an amount at most Upper CI"
+            )
+        else:
+            s += (
+                "\nTwo-sided alternative: sample i's mean exceed the "
+                "control's mean by an amount between Lower CI and Upper CI"
+            )
         return s
 
     def _allowance(self, confidence_level: DecimalNumber = 0.95) -> float:
@@ -75,12 +87,15 @@ class DunnettResult:
         allowance : float
             Allowance around the mean.
         """
-        dist = stats.multivariate_t(shape=self._rho, df=self._df)
         alpha = 1 - confidence_level
 
         def pvalue_from_stat(statistic):
             # two-sided to have +- bounds
-            sf = 1 - dist.cdf(statistic, lower_limit=-statistic)
+            statistic = np.array(statistic)
+            sf = pvalue_dunnett(
+                rho=self._rho, df=self._df,
+                statistic=statistic, alternative=self._alternative
+            )
             return abs(sf - alpha)
 
         # scipy.stats.sampling methods are not working for this distribution
@@ -125,10 +140,18 @@ class DunnettResult:
         allowance = self._allowance(confidence_level=confidence_level)
         diff_means = self._observations_mean - self._control_mean
 
+        low = diff_means-allowance
+        high = diff_means+allowance
+
+        if self._alternative == 'less':
+            high = np.nan
+        elif self._alternative == 'greater':
+            low = np.nan
+
         self._ci_cl = confidence_level
         self._ci = ConfidenceInterval(
-            low=diff_means-allowance,
-            high=diff_means+allowance
+            low=low,
+            high=high
         )
         return self._ci
 
@@ -292,6 +315,7 @@ def dunnett(
 
     return DunnettResult(
         statistic=statistic, pvalue=pvalue,
+        _alternative=alternative,
         _rho=rho, _df=df, _std=std,
         _observations_mean=observations_mean,
         _control_mean=control_mean
