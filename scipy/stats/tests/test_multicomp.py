@@ -62,7 +62,7 @@ class TestDunnett:
     def test_unbalanced(self):
         # From Kwong2000 Table 3
         rng = np.random.default_rng(11681140010308601919115036826969764808)
-        observations = [
+        samples = [
             [
                 24.0, 27.0, 33.0, 32.0, 28.0, 19.0, 37.0, 31.0, 36.0, 36.0,
                 34.0, 38.0, 32.0, 38.0, 32.0
@@ -82,7 +82,7 @@ class TestDunnett:
         ]
         ref = np.array([4.727e-06, 0.022346, 0.97912, 0.99953, 0.86579])
 
-        res = stats.dunnett(*observations, control=control, random_state=rng)
+        res = stats.dunnett(*samples, control=control, random_state=rng)
 
         assert isinstance(res, DunnettResult)
         # last value is problematic
@@ -91,14 +91,14 @@ class TestDunnett:
     def test_allowance(self):
         # compare results from Matlab's documentation on multcompare
         rng = np.random.default_rng(189117774084579816190295271136455278291)
-        observations = [
+        samples = [
             [55, 64, 64],
             [55, 49, 52],
             [50, 44, 41]
         ]
         control = [55, 47, 48]
 
-        res = stats.dunnett(*observations, control=control, random_state=rng)
+        res = stats.dunnett(*samples, control=control, random_state=rng)
         allowance = res._allowance(confidence_level=0.95)
         assert allowance == pytest.approx(11, rel=1)
 
@@ -107,29 +107,32 @@ class TestDunnett:
         assert_allclose(ci.high, [22, 13, 6], atol=1)
 
     def test_raises(self):
-        observations = [
+        samples = [
             [55, 64, 64],
             [55, 49, 52],
             [50, 44, 41]
         ]
         control = [55, 47, 48]
 
-        observations_ = copy.deepcopy(observations)
-        observations_[0] = [observations_[0]]
+        # 2D for a sample
+        samples_ = copy.deepcopy(samples)
+        samples_[0] = [samples_[0]]
         with pytest.raises(ValueError, match="must be 1D arrays"):
-            stats.dunnett(*observations_, control=control)
+            stats.dunnett(*samples_, control=control)
 
+        # 2D for control
         control_ = copy.deepcopy(control)
         control_ = [control_]
         with pytest.raises(ValueError, match="must be 1D arrays"):
-            stats.dunnett(*observations, control=control_)
+            stats.dunnett(*samples, control=control_)
 
-        observations_ = copy.deepcopy(observations)
-        observations_[1] = []
+        # No obs in a sample
+        samples_ = copy.deepcopy(samples)
+        samples_[1] = []
         with pytest.raises(ValueError, match="at least 1 observation"):
-            stats.dunnett(*observations_, control=control)
+            stats.dunnett(*samples_, control=control)
 
-        control_ = copy.deepcopy(control)
+        # No obs in control
         control_ = []
         with pytest.raises(ValueError, match="at least 1 observation"):
-            stats.dunnett(*observations, control=control_)
+            stats.dunnett(*samples, control=control_)
