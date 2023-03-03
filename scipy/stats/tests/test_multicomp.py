@@ -102,9 +102,17 @@ class TestDunnett:
         allowance = res._allowance(confidence_level=0.95)
         assert allowance == pytest.approx(11, rel=1)
 
+        assert res._ci is None
+        assert res._ci_cl is None
         ci = res.confidence_interval(confidence_level=0.95)
         assert_allclose(ci.low, [0, -9, -16], atol=1)
         assert_allclose(ci.high, [22, 13, 6], atol=1)
+
+        # re-run to use the cached value "is" to check id as same object
+        assert res._ci is ci
+        assert res._ci_cl == 0.95
+        ci_ = res.confidence_interval(confidence_level=0.95)
+        assert ci_ is ci
 
     def test_ttest_ind(self):
         rng = np.random.default_rng(114184017807316971636137493526995620351)
@@ -149,3 +157,7 @@ class TestDunnett:
         control_ = []
         with pytest.raises(ValueError, match="at least 1 observation"):
             stats.dunnett(*samples, control=control_)
+
+        res = stats.dunnett(*samples, control=control)
+        with pytest.raises(ValueError, match="Confidence level must"):
+            res.confidence_interval(confidence_level=3)

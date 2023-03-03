@@ -31,6 +31,8 @@ class DunnettResult:
     _std: float
     _observations_mean: np.ndarray
     _control_mean: np.ndarray
+    _ci: ConfidenceInterval | None = None
+    _ci_cl: DecimalNumber | None = None
 
     def _allowance(self, confidence_level: DecimalNumber = 0.95) -> float:
         """Allowance.
@@ -88,12 +90,24 @@ class DunnettResult:
             comparison at index ``(i,)`` for each group ``i``.
 
         """
+        # check to see if the supplied confidence level matches that of the
+        # previously computed CI.
+        if (self._ci is not None and self._ci_cl is not None and
+                confidence_level == self._ci_cl):
+            return self._ci
+
+        if not 0 < confidence_level < 1:
+            raise ValueError("Confidence level must be between 0 and 1.")
+
         allowance = self._allowance(confidence_level=confidence_level)
         diff_means = self._observations_mean - self._control_mean
-        return ConfidenceInterval(
+
+        self._ci_cl = confidence_level
+        self._ci = ConfidenceInterval(
             low=diff_means-allowance,
             high=diff_means+allowance
         )
+        return self._ci
 
 
 def dunnett(
