@@ -34,6 +34,29 @@ class DunnettResult:
     _ci: ConfidenceInterval | None = None
     _ci_cl: DecimalNumber | None = None
 
+    def __str__(self):
+        # Note: `__str__` prints the confidence intervals from the most
+        # recent call to `confidence_interval`. If it has not been called,
+        # it will be called with the default CL of .95.
+        if self._ci is None:
+            self.confidence_interval(confidence_level=.95)
+        s = (
+            "Dunnett's test"
+            f" ({self._ci_cl*100:.1f}% Confidence Interval)\n"
+            "Comparison               Statistic  p-value  Lower CI  Upper CI\n"
+        )
+        for i in range(self.pvalue.shape[0]):
+            s += (f" (Sample {i} - Control) {self.statistic[i]:>10.3f}"
+                  f"{self.pvalue[i]:>10.3f}"
+                  f"{self._ci.low[i]:>10.3f}"
+                  f"{self._ci.high[i]:>10.3f}\n")
+
+        s += (
+            "\nTwo-sided alternative: sample i's mean exceed the control's "
+            "mean by an amount betweenLower CI and Upper CI"
+        )
+        return s
+
     def _allowance(self, confidence_level: DecimalNumber = 0.95) -> float:
         """Allowance.
 

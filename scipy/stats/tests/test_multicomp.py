@@ -60,7 +60,7 @@ class TestDunnett:
         assert_allclose(res, pvalue, atol=5e-3)
 
     def test_unbalanced(self):
-        # From Kwong2000 Table 3
+        # compare results from Matlab's documentation on multcompare
         rng = np.random.default_rng(11681140010308601919115036826969764808)
         samples = [
             [
@@ -89,7 +89,7 @@ class TestDunnett:
         assert_allclose(res.pvalue[:-1], ref[:-1], atol=0.015)
 
     def test_allowance(self):
-        # compare results from Matlab's documentation on multcompare
+        # Example (a) from Dunnett1995
         rng = np.random.default_rng(189117774084579816190295271136455278291)
         samples = [
             [55, 64, 64],
