@@ -125,6 +125,24 @@ class TestDunnett:
         ci_ = res.confidence_interval(confidence_level=0.95)
         assert ci_ is ci
 
+        # check some str output
+        res_str = res.__str__()
+        assert '(Sample 2 - Control)' in res_str
+        assert '95.0%' in res_str
+
+        if alternative == 'less':
+            assert 'nan' in res_str
+            assert 'at least Lower' in res_str
+            assert '-13.' in res_str
+        elif alternative == 'greater':
+            assert 'nan' in res_str
+            assert 'at most Upper' in res_str
+            assert '19.' in res_str
+        else:
+            assert 'nan' not in res_str
+            assert 'between' in res_str
+            assert '21.' in res_str
+
     def test_ttest_ind(self):
         rng = np.random.default_rng(114184017807316971636137493526995620351)
 
