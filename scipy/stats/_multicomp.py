@@ -144,9 +144,9 @@ class DunnettResult:
         high = diff_means+allowance
 
         if self._alternative == 'less':
-            high = np.nan
+            high = [np.nan] * len(diff_means)
         elif self._alternative == 'greater':
-            low = np.nan
+            low = [np.nan] * len(diff_means)
 
         self._ci_cl = confidence_level
         self._ci = ConfidenceInterval(
