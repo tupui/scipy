@@ -88,7 +88,15 @@ class TestDunnett:
         # last value is problematic
         assert_allclose(res.pvalue[:-1], ref[:-1], atol=0.015)
 
-    def test_allowance(self):
+    @pytest.mark.parametrize(
+        'alternative, allowance, ci_low, ci_high',
+        [
+            ('two-sided', 11, [0, -9, -16], [22, 13, 6]),
+            ('less', 9, [2, -7, -14], [np.nan, np.nan, np.nan]),
+            ('greater', 9, [np.nan, np.nan, np.nan], [20, 11, 4])
+        ]
+    )
+    def test_allowance(self, alternative, allowance, ci_low, ci_high):
         # Example (a) from Dunnett1995
         rng = np.random.default_rng(189117774084579816190295271136455278291)
         samples = [
@@ -98,15 +106,18 @@ class TestDunnett:
         ]
         control = [55, 47, 48]
 
-        res = stats.dunnett(*samples, control=control, random_state=rng)
-        allowance = res._allowance(confidence_level=0.95)
-        assert allowance == pytest.approx(11, rel=1)
+        res = stats.dunnett(
+            *samples, control=control, alternative=alternative,
+            random_state=rng
+        )
+        allowance_ = res._allowance(confidence_level=0.95)
+        assert allowance_ == pytest.approx(allowance, rel=1)
 
         assert res._ci is None
         assert res._ci_cl is None
         ci = res.confidence_interval(confidence_level=0.95)
-        assert_allclose(ci.low, [0, -9, -16], atol=1)
-        assert_allclose(ci.high, [22, 13, 6], atol=1)
+        assert_allclose(ci.low, ci_low, atol=1)
+        assert_allclose(ci.high, ci_high, atol=1)
 
         # re-run to use the cached value "is" to check id as same object
         assert res._ci is ci
