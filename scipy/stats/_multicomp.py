@@ -331,16 +331,8 @@ def iv_dunnett(
     ndim_msg = "Control and samples groups must be 1D arrays"
     n_obs_msg = "Control and samples groups must have at least 1 observation"
 
-    # control checks
-    control = np.asarray(control)
-    if control.ndim > 1:
-        raise ValueError(ndim_msg)
-
-    if len(control) < 1:
-        raise ValueError(n_obs_msg)
-
     # samples checks
-    for sample in samples:
+    for sample in (samples + [control]):
         sample = np.asarray(sample)
         if sample.ndim > 1:
             raise ValueError(ndim_msg)
