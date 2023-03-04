@@ -98,7 +98,6 @@ class DunnettResult:
             )
             return abs(sf - alpha)
 
-        # scipy.stats.sampling methods are not working for this distribution
         res = minimize_scalar(pvalue_from_stat, method='brent', tol=1e-4)
         critical_value = res.x
 
