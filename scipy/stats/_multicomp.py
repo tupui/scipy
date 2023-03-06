@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import numpy as np
-from numpy.testing import suppress_warnings
 
 from scipy import stats
 from scipy.optimize import minimize_scalar
@@ -289,14 +288,12 @@ def dunnett(
         samples=samples, control=control
     )
 
-    with suppress_warnings() as sup:
-        sup.filter(RuntimeWarning)
-        statistic = np.array([
-            stats.ttest_ind(
-                obs_, control, alternative=alternative, random_state=rng
-            ).statistic
-            for obs_ in samples
-        ])
+    statistic = np.array([
+        stats.ttest_ind(
+            obs_, control, alternative=alternative, random_state=rng
+        ).statistic
+        for obs_ in samples
+    ])
 
     pvalue = pvalue_dunnett(
         rho=rho, df=df,
