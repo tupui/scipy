@@ -529,7 +529,7 @@ def logrank(
     >>> plt.legend()
     >>> plt.show()
 
-    Visual inspection of the empirical survival functions suggested that the
+    Visual inspection of the empirical survival functions suggests that the
     survival times tend to be different between the two groups. To formally
     assess whether the difference is significant at the 1% level, we use the
     logrank test.
