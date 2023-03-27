@@ -495,7 +495,7 @@ def logrank(
     `scipy.stats.CensoredData` class is used because the data is
     right-censored: the uncensored observations correspond with observed deaths
     whereas the censored observations correspond with the patient leaving the
-    study another reason.
+    study for another reason.
 
     >>> from scipy import stats
     >>> x = stats.CensoredData(
