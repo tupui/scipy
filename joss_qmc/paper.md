@@ -35,6 +35,12 @@ bibliography: paper.bib
 
 # Summary
 
+NumPy random number generators and SciPy distributions are widely used to get
+random numbers. However, challenges might arise when sampling in high
+dimensions. Quasi-Monte Carlo (QMC) methods provide and answer to these
+problems but are arguably hard to use. Thanks to new developments in SciPy,
+a new submodule was introduced in version 1.7.0 making state-of-the-art QMC
+methods accessible: `scipy.stats.qmc`.
 
 # Statement of need
 
@@ -57,7 +63,7 @@ language, and platform -- the sequence is mathematically defined.
 
 In many cases, a QMC sequence can be used as a drop-in
 replacement for a random number sequence, yet they are proven to provide faster
-convergence rates (both in theory and practice).
+convergence rates (both in theory and practice) [@owen2019].
 When true stochasticity is required (e.g. statistical
 inference), QMC sequences can be "scrambled" using random numbers, and several smaller scrambled QMC sequences can often replace one large random sequence.
 
