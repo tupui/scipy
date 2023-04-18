@@ -54,7 +54,7 @@ to solve deterministic problems, the resulting "Monte Carlo" (MC) methods have a
 convergence rate. In practice, this can mean that substantial computational
 resources are required to provide sufficient accuracy.
 
-In Quasi-Monte Carlo (QMC) methods [@owen2019], the random numbers of Monte
+In Quasi-Monte Carlo (QMC) methods [@niederreiter1992], the random numbers of Monte
 Carlo methods are replaced with a deterministic sequence of numbers that
 possesses many of the characteristics of a random sequence
 (e.g. reduction of variance with increasing sample size), but without these gaps
@@ -82,8 +82,8 @@ The following set of QMC features are now available in SciPy:
 - Latin Hypercube Sampling (centered, strength 1 or 2),
 - Optimize a sample by minimizing $C^2$ discrepancy or performing Lloyd-Max
   iterations,
-- Fast numerical inverse methods to sample arbitrary univariate distributions with QMC [@unuran2022].
-- QMC integration
+- Fast numerical inverse methods to sample arbitrary univariate distributions with QMC [@unuran2022],
+- QMC integration.
 
 Before the release of SciPy 1.7.0, the need for these functions was partially
 met in the scientific Python ecosystem by tutorials (e.g. blog posts)
