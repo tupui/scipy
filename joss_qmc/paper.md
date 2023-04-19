@@ -35,12 +35,12 @@ bibliography: paper.bib
 
 # Summary
 
-NumPy random number generators and SciPy distributions are widely used to get
+NumPy random number generators and SciPy distributions are widely used to generate
 random numbers. However, challenges might arise when sampling in high
-dimensions. Quasi-Monte Carlo (QMC) methods provide and answer to these
+dimensions. Quasi-Monte Carlo (QMC) methods provide an answer to these
 problems but are arguably hard to use. Thanks to new developments in SciPy,
 a new submodule was introduced in version 1.7.0 making state-of-the-art QMC
-methods accessible: `scipy.stats.qmc`.
+methods available: `scipy.stats.qmc`.
 
 # Statement of need
 
@@ -58,7 +58,7 @@ In Quasi-Monte Carlo (QMC) methods [@niederreiter1992], the random numbers of Mo
 Carlo methods are replaced with a deterministic sequence of numbers that
 possesses many of the characteristics of a random sequence
 (e.g. reduction of variance with increasing sample size), but without these gaps
-and clusters. QMC determinism is independent of is implementation,
+and clusters. QMC determinism is independent of its implementation,
 language, and platform -- the sequence is mathematically defined. 
 
 In many cases, a QMC sequence can be used as a drop-in
