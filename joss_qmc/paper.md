@@ -44,7 +44,7 @@ methods available: `scipy.stats.qmc`.
 
 # Statement of need
 
-NumPy pseudorandom number generators (`numpy.random`) have become the de-facto
+NumPy pseudorandom number generators (`numpy.random`) have become the de facto
 standard for sampling random numbers in the scientific Python ecosystem.
 These methods are fast and reliable, and the results are repeatable when a
 seed is provided. However, sampling in high dimensions with pseudorandom numbers tends to produce
@@ -89,10 +89,10 @@ Before the release of SciPy 1.7.0, the need for these functions was partially
 met in the scientific Python ecosystem by tutorials (e.g. blog posts)
 and niche packages, but the functions in SciPy have several advantages:
 
-- Popularity: with millions of downloads per month, SciPy is one of
+- Popularity: With millions of downloads per month, SciPy is one of
   the most downloaded scientific Python packages. New features immediately
   reach a wide range of users from all fields.
-- Performance: The low level functions are written in compiled languages such
+- Performance: The low-level functions are written in compiled languages such
   as Cython and optimized for speed and efficiency.
 - Consistency: The APIs comply with the high standards of SciPy, function API
   reference and tutorials are thorough, and the interfaces share common
