@@ -1,3 +1,5 @@
+from scipy._lib._array_api import as_xparray, array_namespace
+from . import _pocketfft as pocketfft
 from scipy._lib.uarray import generate_multimethod, Dispatchable
 import numpy as np
 
@@ -20,9 +22,33 @@ def _dispatch(func):
     return generate_multimethod(func, _x_replacer, domain="numpy.scipy.fft")
 
 
-@_dispatch
 def fft(x, n=None, axis=-1, norm=None, overwrite_x=False, workers=None, *,
         plan=None):
+    """
+    For non-numpy arrays, this implements the Array API specification of fft.
+    For numpy arrays, see the documentation for npfft.fft.
+    Note that if arguments outside of those in the Array API specification
+    are provided with a non-numpy array, an exception is raised.
+    """
+    if isinstance(x, np.ndarray):
+        return _np_fft(x, n, axis, norm, overwrite_x, workers, plan)
+    if overwrite_x is not False:
+        Exception
+    if workers is not None:
+        Exception
+    if plan is not None:
+        Exception
+    xp = array_namespace(x)
+    if hasattr(xp, 'fft'):
+        return xp.fft.fft(x, n, axis, norm)
+    x = np.asarray(x)
+    y = pocketfft.fft(x, n, axis, norm)
+    return xp.asarray(y)
+
+
+@_dispatch
+def _np_fft(x, n=None, axis=-1, norm=None, overwrite_x=False, workers=None, *,
+            plan=None):
     """
     Compute the 1-D discrete Fourier Transform.
 
