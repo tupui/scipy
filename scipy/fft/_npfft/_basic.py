@@ -21,8 +21,7 @@ def _dispatch(func):
 
 
 @_dispatch
-def fft(x, n=None, axis=-1, norm=None, overwrite_x=False, workers=None, *,
-        plan=None):
+def fft(x, n, axis, norm, overwrite_x, workers, plan):
     """
     Compute the 1-D discrete Fourier Transform.
 

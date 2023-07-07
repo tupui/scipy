@@ -8,7 +8,7 @@ added: 14/11/2020 Nicolas Tessore <n.tessore@ucl.ac.uk>
 import numpy as np
 from warnings import warn
 from ._basic import rfft, irfft
-from ..special import loggamma, poch
+from ...special import loggamma, poch
 
 __all__ = [
     'fht', 'ifht',

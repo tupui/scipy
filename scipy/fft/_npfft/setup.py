@@ -1,7 +1,7 @@
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
-    config = Configuration('fft', parent_package, top_path)
-    config.add_subpackage('_npfft')
+    config = Configuration('_npfft', parent_package, top_path)
+    config.add_subpackage('_pocketfft')
     config.add_data_dir('tests')
     return config
 
