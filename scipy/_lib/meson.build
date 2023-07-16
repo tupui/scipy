@@ -108,6 +108,7 @@ python_sources = [
   '_docscrape.py',
   '_finite_differences.py',
   '_gcutils.py',
+  '_parameters_validation.py',
   '_pep440.py',
   '_testutils.py',
   '_threadsafety.py',
