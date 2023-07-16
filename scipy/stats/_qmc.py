@@ -8,6 +8,7 @@ import os
 import warnings
 from abc import ABC, abstractmethod
 from functools import partial
+from numbers import Integral
 from typing import (
     Callable,
     ClassVar,
@@ -25,6 +26,7 @@ if TYPE_CHECKING:
     )
 
 import scipy.stats as stats
+from scipy._lib._parameters_validation import validate_params, StrOptions, Interval
 from scipy._lib._util import rng_integers, _rng_spawn
 from scipy.spatial import distance, Voronoi
 from scipy.special import gammainc
@@ -736,6 +738,14 @@ class QMCEngine(ABC):
 
     """
 
+    @validate_params(
+        {
+            "d": [Interval(Integral, 0, None, closed="left")],
+            "seed": ["random_state"],
+            "optimization": [StrOptions({"random-cd", "lloyd"}), None],
+        },
+        prefer_skip_nested_validation=True,
+    )
     @abstractmethod
     def __init__(
         self,
@@ -744,9 +754,6 @@ class QMCEngine(ABC):
         optimization: Literal["random-cd", "lloyd"] | None = None,
         seed: SeedType = None
     ) -> None:
-        if not np.issubdtype(type(d), np.integer) or d < 0:
-            raise ValueError('d must be a non-negative integer value')
-
         self.d = d
 
         if isinstance(seed, np.random.Generator):
@@ -1499,6 +1506,16 @@ class Sobol(QMCEngine):
 
     MAXDIM: ClassVar[int] = _MAXDIM
 
+    @validate_params(
+        {
+            "d": [Interval(Integral, 0, MAXDIM, closed="both")],
+            "scramble": ["boolean"],
+            "bits": [Interval(Integral, 0, 64, closed="both"), None],
+            "seed": ["random_state"],
+            "optimization": [StrOptions({"random-cd", "lloyd"}), None],
+        },
+        prefer_skip_nested_validation=True,
+    )
     def __init__(
         self, d: IntNumber, *, scramble: bool = True,
         bits: IntNumber | None = None, seed: SeedType = None,
@@ -1509,10 +1526,6 @@ class Sobol(QMCEngine):
                            'optimization': optimization}
 
         super().__init__(d=d, optimization=optimization, seed=seed)
-        if d > self.MAXDIM:
-            raise ValueError(
-                f"Maximum supported dimensionality is {self.MAXDIM}."
-            )
 
         self.bits = bits
         self.dtype_i: type
@@ -1524,8 +1537,6 @@ class Sobol(QMCEngine):
             self.dtype_i = np.uint32
         elif 32 < self.bits <= 64:
             self.dtype_i = np.uint64
-        else:
-            raise ValueError("Maximum supported 'bits' is 64")
 
         self.maxn = 2**self.bits
 
@@ -2280,15 +2291,7 @@ def _select_optimizer(
 
     optimizer: partial | None
     if optimization is not None:
-        try:
-            optimization = optimization.lower()  # type: ignore[assignment]
-            optimizer_ = optimization_method[optimization]
-        except KeyError as exc:
-            message = (f"{optimization!r} is not a valid optimization"
-                       f" method. It must be one of"
-                       f" {set(optimization_method)!r}")
-            raise ValueError(message) from exc
-
+        optimizer_ = optimization_method[optimization.lower()]
         # config
         optimizer = partial(optimizer_, **config)
     else:

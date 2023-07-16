@@ -399,10 +399,10 @@ def test_subclassing_QMCEngine():
 
 def test_raises():
     # input validation
-    with pytest.raises(ValueError, match=r"d must be a non-negative integer"):
+    with pytest.raises(ValueError, match=r"must be an int in the range"):
         RandomEngine((2,))  # noqa
 
-    with pytest.raises(ValueError, match=r"d must be a non-negative integer"):
+    with pytest.raises(ValueError, match=r"must be an int in the range"):
         RandomEngine(-1)  # noqa
 
     msg = r"'u_bounds' and 'l_bounds' must be integers"
@@ -595,7 +595,7 @@ class QMCEngineTests:
         )
 
     def test_raises_optimizer(self):
-        message = r"'toto' is not a valid optimization method"
+        message = r"Got 'toto' instead"
         with pytest.raises(ValueError, match=message):
             self.engine(d=1, scramble=False, optimization="toto")
 
@@ -791,12 +791,10 @@ class TestSobol(QMCEngineTests):
             engine.random_base2(2)
 
     def test_raise(self):
-        with pytest.raises(ValueError, match=r"Maximum supported "
-                                             r"dimensionality"):
+        with pytest.raises(ValueError, match="must be an int in the range"):
             qmc.Sobol(qmc.Sobol.MAXDIM + 1)
 
-        with pytest.raises(ValueError, match=r"Maximum supported "
-                                             r"'bits' is 64"):
+        with pytest.raises(ValueError, match="Got 65 instead"):
             qmc.Sobol(1, bits=65)
 
     def test_high_dim(self):
