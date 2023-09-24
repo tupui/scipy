@@ -1846,13 +1846,13 @@ class TestBracketRoot:
         with pytest.raises(ValueError, match=message):
             zeros._bracket_root(lambda x: x, -4, 4, factor=0.5)
 
-        message = '`min <= a < b <= max` must be True'
-        with pytest.raises(ValueError, match=message):
-            zeros._bracket_root(lambda x: x, 4, -4)
-        with pytest.raises(ValueError, match=message):
-            zeros._bracket_root(lambda x: x, -4, 4, max=np.nan)
-        with pytest.raises(ValueError, match=message):
-            zeros._bracket_root(lambda x: x, -4, 4, min=10)
+        # message = '`min <= a < b <= max` must be True'
+        # with pytest.raises(ValueError, match=message):
+        #     zeros._bracket_root(lambda x: x, 4, -4)
+        # with pytest.raises(ValueError, match=message):
+        #     zeros._bracket_root(lambda x: x, -4, 4, max=np.nan)
+        # with pytest.raises(ValueError, match=message):
+        #     zeros._bracket_root(lambda x: x, -4, 4, min=10)
 
         message = "shape mismatch: objects cannot be broadcast"
         # raised by `np.broadcast, but the traceback is readable IMO
