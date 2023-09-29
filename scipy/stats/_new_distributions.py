@@ -151,11 +151,11 @@ class LogUniform(ContinuousDistribution):
     # def _cdf_formula(self, x, *, log_a, log_b, **kwargs):
     #     return (np.log(x) - log_a)/(log_b - log_a)
 
-    def _moment_raw_formula(self, order, log_a, log_b, **kwargs):
+    def _moment_raw_formula(self, order, log_a, log_b, *, xp, **kwargs):
         if order == 0:
             return 1
         t1 = 1 / (log_b - log_a) / order
-        t2 = np.real(np.exp(_log_diff(order * log_b, order * log_a)))
+        t2 = np.real(xp.exp(_log_diff(order * log_b, order * log_a)))
         return t1 * t2
 
 
@@ -187,17 +187,17 @@ class CircularDistribution(ShiftedScaledDistribution):
         parameters.update(dict(a=a, b=b, scale=scale))
         return parameters
 
-    def _transform(self, x, a, b, scale, **kwargs):
+    def _transform(self, x, a, b, scale, *, xp, **kwargs):
         x01 = (x - a)/scale  # shift/scale to 0-1
         x01 %= 1  # wrap to 0-1
-        return 2*np.pi*x01 - np.pi  # shift/scale to -π, π
+        return 2*xp.pi*x01 - xp.pi  # shift/scale to -π, π
 
-    def _itransform(self, x, a, b, scale, **kwargs):
-        x01 = (x + np.pi)/(2*np.pi)  # shift/scale to 0-1
+    def _itransform(self, x, a, b, scale, *, xp, **kwargs):
+        x01 = (x + xp.pi)/(2*xp.pi)  # shift/scale to 0-1
         return scale*x01 + a  # shift/scale to a, b
 
-    def _support(self, a, b, scale, **kwargs):
-        return np.full_like(a, -np.inf), np.full_like(b, np.inf)
+    def _support(self, a, b, scale, *, xp, **kwargs):
+        return np.full_like(a, -xp.inf), xp.full_like(b, xp.inf)
 
     def _pdf_dispatch(self, x, *args, a, b, scale, **kwargs):
         x = self._transform(x, a, b, scale)
@@ -231,8 +231,8 @@ class _VonMises(ContinuousDistribution):
     _parameterizations = [_Parameterization(_mu_param, _kappa_param)]
     _variable = _x_param
 
-    def _pdf_formula(self, x, mu, kappa, **kwargs):
-        return np.exp(kappa * np.cos(x - mu))/(2*np.pi*special.i0(kappa))
+    def _pdf_formula(self, x, mu, kappa, *, xp, **kwargs):
+        return xp.exp(kappa * xp.cos(x - mu))/(2*xp.pi*special.i0(kappa))
 
-    def _sample_formula(self, sample_shape, full_shape, rng, mu, kappa, **kwargs):
+    def _sample_formula(self, sample_shape, full_shape, rng, mu, kappa, *, xp, **kwargs):
         return rng.vonmises(mu=mu, kappa=kappa, size=full_shape)[()]

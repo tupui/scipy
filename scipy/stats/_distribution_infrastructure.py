@@ -2,6 +2,7 @@ import functools
 from abc import ABC, abstractmethod
 from functools import cached_property
 
+from scipy._lib._array_api import array_namespace, as_xparray, copy
 from scipy._lib._util import _lazywhere
 from scipy import special, optimize
 from scipy.integrate._tanhsinh import _tanhsinh
@@ -256,8 +257,9 @@ class _SimpleDomain(_Domain):
 
     """
     def __init__(self, endpoints=(-oo, oo), inclusive=(False, False)):
+        self._xp = array_namespace(endpoints)
         a, b = endpoints
-        self.endpoints = np.asarray(a)[()], np.asarray(b)[()]
+        self.endpoints = self._xp.asarray(a)[()], self._xp.asarray(b)[()]
         self.inclusive = inclusive
         # self.all_inclusive = (endpoints == (-oo, oo)
         #                       and inclusive == (True, True))
@@ -310,8 +312,8 @@ class _SimpleDomain(_Domain):
         # will be found in the `parameter_values` dictionary. Otherwise, it is
         # itself the array of numerical values of the endpoint.
         try:
-            a = np.asarray(parameter_values.get(a, a))
-            b = np.asarray(parameter_values.get(b, b))
+            a = self._xp.asarray(parameter_values.get(a, a))
+            b = self._xp.asarray(parameter_values.get(b, b))
         except TypeError as e:
             message = ("The endpoints of the distribution are defined by "
                        "parameters, but their values were not provided. When "
@@ -425,17 +427,17 @@ class _RealDomain(_SimpleDomain):
         parameter_values = parameter_values or {}
         rng = rng or np.random.default_rng()
         proportions = (1, 0, 0, 0) if proportions is None else proportions
-        pvals = np.abs(proportions)/np.sum(proportions)
+        pvals = self._xp.abs(proportions)/self._xp.sum(proportions)
 
         a, b = self.get_numerical_endpoints(parameter_values)
-        a, b = np.broadcast_arrays(a, b)
-        min = np.maximum(a, np.finfo(a).min/10) if np.any(np.isinf(a)) else a
-        max = np.minimum(b, np.finfo(b).max/10) if np.any(np.isinf(b)) else b
+        a, b = self._xp.broadcast_arrays(a, b)
+        min = self._xp.maximum(a, self._xp.finfo(a).min/10) if self._xp.any(self._xp.isinf(a)) else a
+        max = self._xp.minimum(b, self._xp.finfo(b).max/10) if self._xp.any(self._xp.isinf(b)) else b
 
         base_shape = min.shape
         extended_shape = np.broadcast_shapes(size, base_shape)
-        n_extended = np.prod(extended_shape)
-        n_base = np.prod(base_shape)
+        n_extended = self._xp.prod(extended_shape)
+        n_base = self._xp.prod(base_shape)
         n = int(n_extended / n_base) if n_extended else 0
 
         n_in, n_on, n_out, n_nan = rng.multinomial(n, pvals)
@@ -455,10 +457,10 @@ class _RealDomain(_SimpleDomain):
         #   these axes back to their original places.
         base_shape_padded = ((1,)*(len(extended_shape) - len(base_shape))
                              + base_shape)
-        base_singletons = np.where(np.asarray(base_shape_padded)==1)[0]
+        base_singletons = self._xp.where(self._xp.asarray(base_shape_padded)==1)[0]
         new_base_singletons = tuple(range(len(base_singletons)))
         # Base singleton dimensions are going to get expanded to these lengths
-        shape_expansion = np.asarray(extended_shape)[base_singletons]
+        shape_expansion = self._xp.asarray(extended_shape)[base_singletons]
 
         # assert(np.prod(shape_expansion) == n)  # check understanding
         # min = np.reshape(min, base_shape_padded)
@@ -469,31 +471,33 @@ class _RealDomain(_SimpleDomain):
         # assert np.all(min.reshape(squeezed_base_shape) == min.squeeze())
         # assert np.all(max.reshape(squeezed_base_shape) == max.squeeze())
 
-        min = min.squeeze()
-        max = max.squeeze()
+        min = self._xp.squeeze(min)
+        max = self._xp.squeeze(max)
         squeezed_base_shape = max.shape
 
         # get copies of min and max with no nans so that uniform doesn't fail
-        min_nn, max_nn = min.copy(), max.copy()
-        i = np.isnan(min_nn) | np.isnan(max_nn)
+        min_nn, max_nn = copy(min, xp=self._xp), copy(max, xp=self._xp)
+        i = self._xp.isnan(min_nn) | self._xp.isnan(max_nn)
         min_nn[i] = 0
         max_nn[i] = 1
         z_in = rng.uniform(min_nn, max_nn, size=(n_in,) + squeezed_base_shape)
+        z_in = self._xp.asarray(z_in)
 
         z_on_shape = (n_on,) + squeezed_base_shape
-        z_on = np.ones(z_on_shape)
+        z_on = self._xp.ones(z_on_shape)
         z_on[:n_on // 2] = min
         z_on[n_on // 2:] = max
 
         z_out = rng.uniform(min_nn-10, max_nn+10,
                             size=(n_out,) + squeezed_base_shape)
+        z_out = self._xp.asarray(z_out)
 
-        z_nan = np.full((n_nan,) + squeezed_base_shape, np.nan)
+        z_nan = self._xp.full((n_nan,) + squeezed_base_shape, np.nan)
 
-        z = np.concatenate((z_in, z_on, z_out, z_nan), axis=0)
+        z = self._xp.concat((z_in, z_on, z_out, z_nan), axis=0)
         z = rng.permuted(z, axis=0)
 
-        z = np.reshape(z, tuple(shape_expansion) + squeezed_base_shape)
+        z = self._xp.reshape(z, tuple(shape_expansion) + squeezed_base_shape)
         z = np.moveaxis(z, new_base_singletons, base_singletons)
         return z
 
@@ -643,21 +647,18 @@ class _RealParameter(_Parameter):
             does not meet the requirements will be replaced with NaN.
 
         """
-        arr = np.asarray(arr)
+        xp = array_namespace(arr)
+        arr = xp.asarray(arr)
 
         valid_dtype = None
         # minor optimization - fast track the most common types to avoid
         # overhead of np.issubdtype. Checking for `in {...}` doesn't work : /
-        if arr.dtype == np.float64 or arr.dtype == np.float32:
+        if xp.isdtype(kind='real floating'):
             pass
-        elif arr.dtype == np.int32 or arr.dtype == np.int64:
-            arr = np.asarray(arr, dtype=np.float64)
-        elif np.issubdtype(arr.dtype, np.floating):
-            pass
-        elif np.issubdtype(arr.dtype, np.integer):
-            arr = np.asarray(arr, dtype=np.float64)
-        elif np.issubdtype(arr.dtype, np.complexfloating):
-            real_arr = np.real(arr)
+        elif xp.isdtype(kind='integral'):
+            arr = xp.asarray(arr, dtype=xp.float64)
+        elif xp.isdtype(kind='complex floating'):
+            real_arr = xp.real(arr)
             valid_dtype = (real_arr == arr)
             arr = real_arr
         else:
@@ -703,6 +704,9 @@ class _Parameterization:
         in testing.
     """
     def __init__(self, *parameters):
+        self.parameters = {}
+        for param in parameters:
+
         self.parameters = {param.name: param for param in parameters}
 
     def __len__(self):
@@ -1175,7 +1179,6 @@ class ContinuousDistribution:
             "to use the default implementation."
         )
         self._original_parameters = {}
-
         self.update_parameters(**parameters)
 
     def update_parameters(self, *, iv_policy=None, **kwargs):
